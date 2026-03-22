@@ -7,13 +7,14 @@ export default function Home() {
         nav { background: #0B1F45; padding: 0 2rem; height: 64px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(200,151,58,0.2); }
         .logo { font-family: Georgia, serif; font-size: 22px; font-weight: 700; color: #fff; }
         .logo span { color: #C8973A; }
-        .btn-gold { background: #C8973A; border: none; color: #fff; padding: 10px 22px; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; }
+        .btn-gold { background: #C8973A; border: none; color: #fff; padding: 10px 22px; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; text-decoration: none; display: inline-block; }
         .hero { background: #0B1F45; padding: 100px 2rem 80px; text-align: center; }
         .hero h1 { font-family: Georgia, serif; font-size: 62px; font-weight: 800; color: #fff; line-height: 1.05; margin-bottom: 24px; }
         .hero h1 em { color: #C8973A; font-style: normal; }
         .hero p { font-size: 18px; color: rgba(255,255,255,0.6); max-width: 500px; margin: 0 auto 40px; }
-        .hero-btns { display: flex; gap: 14px; justify-content: center; }
-        .btn-outline { background: transparent; color: #fff; border: 1px solid rgba(255,255,255,0.3); padding: 14px 32px; border-radius: 10px; font-size: 16px; cursor: pointer; }
+        .hero-btns { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+        .btn-hero { background: #C8973A; border: none; color: #fff; padding: 15px 36px; border-radius: 10px; font-size: 16px; font-weight: 600; cursor: pointer; text-decoration: none; display: inline-block; }
+        .btn-outline { background: transparent; color: #fff; border: 1px solid rgba(255,255,255,0.3); padding: 15px 36px; border-radius: 10px; font-size: 16px; cursor: pointer; text-decoration: none; display: inline-block; }
         .stats { display: flex; justify-content: center; gap: 60px; padding: 40px 2rem; background: #fff; flex-wrap: wrap; }
         .stat-num { font-family: Georgia, serif; font-size: 36px; font-weight: 800; color: #C8973A; }
         .stat-label { font-size: 13px; color: #4A5568; }
@@ -47,15 +48,15 @@ export default function Home() {
 
       <nav>
         <div className="logo">Nova<span>Biz</span></div>
-        <button className="btn-gold">Essai gratuit →</button>
+        <a href="/signup" className="btn-gold">Essai gratuit →</a>
       </nav>
 
       <section className="hero">
         <h1>Pilotez votre entreprise.<br/><em>Pas votre paperasse.</em></h1>
         <p>Factures, relances IA, notes de frais et projets. Tout au même endroit.</p>
         <div className="hero-btns">
-          <button className="btn-gold" style={{padding:'15px 36px', fontSize:'16px'}}>Démarrer gratuitement →</button>
-          <button className="btn-outline">Voir les tarifs</button>
+          <a href="/signup" className="btn-hero">Démarrer gratuitement →</a>
+          <a href="#pricing" className="btn-outline">Voir les tarifs</a>
         </div>
       </section>
 
@@ -77,7 +78,7 @@ export default function Home() {
         </div>
       </div>
 
-      <div className="pricing-bg">
+      <div className="pricing-bg" id="pricing">
         <div className="pricing-inner">
           <div className="tag">Tarifs</div>
           <div className="section-h" style={{marginBottom:'40px'}}>Simple et transparent</div>
@@ -86,25 +87,34 @@ export default function Home() {
               <div className="price-name">Starter</div>
               <div><span className="price-eur">39€</span><span className="price-per">/mois</span></div>
               <ul className="price-list">
-                <li>✓ 30 factures/mois</li><li>✓ 10 relances/mois</li><li>✓ 1 utilisateur</li><li>✓ Support email</li>
+                <li>✓ 30 factures/mois</li>
+                <li>✓ 10 relances/mois</li>
+                <li>✓ 1 utilisateur</li>
+                <li>✓ Support email</li>
               </ul>
-              <button className="btn-gold" style={{width:'100%', padding:'13px'}}>Commencer</button>
+              <a href="/signup" className="btn-gold" style={{display:'block',textAlign:'center',padding:'13px'}}>Commencer</a>
             </div>
             <div className="price-card featured">
               <div className="price-name">Business</div>
               <div><span className="price-eur">79€</span><span className="price-per">/mois</span></div>
               <ul className="price-list">
-                <li>✓ Factures illimitées</li><li>✓ Relances IA 30/mois</li><li>✓ 5 utilisateurs</li><li>✓ Support prioritaire</li>
+                <li>✓ Factures illimitées</li>
+                <li>✓ Relances IA 30/mois</li>
+                <li>✓ 5 utilisateurs</li>
+                <li>✓ Support prioritaire</li>
               </ul>
-              <button className="btn-gold" style={{width:'100%', padding:'13px'}}>Commencer →</button>
+              <a href="/signup" className="btn-gold" style={{display:'block',textAlign:'center',padding:'13px'}}>Commencer →</a>
             </div>
             <div className="price-card">
               <div className="price-name">Premium</div>
               <div><span className="price-eur">149€</span><span className="price-per">/mois</span></div>
               <ul className="price-list">
-                <li>✓ Tout illimité</li><li>✓ IA illimitée</li><li>✓ Utilisateurs illimités</li><li>✓ Support dédié 24/7</li>
+                <li>✓ Tout illimité</li>
+                <li>✓ IA illimitée</li>
+                <li>✓ Utilisateurs illimités</li>
+                <li>✓ Support dédié 24/7</li>
               </ul>
-              <button style={{width:'100%', padding:'13px', background:'none', border:'1px solid rgba(11,31,69,0.2)', borderRadius:'10px', cursor:'pointer', fontSize:'14px'}}>Nous contacter</button>
+              <a href="/signup" style={{display:'block',textAlign:'center',padding:'13px',background:'none',border:'1px solid rgba(11,31,69,0.2)',borderRadius:'10px',cursor:'pointer',fontSize:'14px',color:'#0B1F45',textDecoration:'none'}}>Nous contacter</a>
             </div>
           </div>
         </div>
@@ -113,7 +123,7 @@ export default function Home() {
       <div className="cta-banner">
         <h2>Prêt à vous lancer ?</h2>
         <p>14 jours gratuits. Sans carte bancaire.</p>
-        <button className="btn-gold" style={{padding:'15px 36px', fontSize:'16px'}}>Démarrer maintenant →</button>
+        <a href="/signup" className="btn-hero">Démarrer maintenant →</a>
       </div>
 
       <footer>
