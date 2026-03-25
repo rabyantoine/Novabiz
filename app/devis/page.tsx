@@ -24,6 +24,8 @@ const NAV = [
   { label: 'Frais', href: '/frais' },
   { label: 'Relances', href: '/relances' },
   { label: 'Planning', href: '/planning' },
+  { label: 'Rapports', href: '/rapports' },
+  { label: 'Paramètres', href: '/parametres' },
 ]
 
 const STATUT_STYLE: Record<string, { bg: string; color: string; label: string }> = {

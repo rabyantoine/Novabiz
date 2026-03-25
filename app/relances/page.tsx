@@ -29,6 +29,8 @@ const NAV = [
   { label: 'Frais', href: '/frais' },
   { label: 'Relances', href: '/relances' },
   { label: 'Planning', href: '/planning' },
+  { label: 'Rapports', href: '/rapports' },
+  { label: 'Paramètres', href: '/parametres' },
 ]
 
 const fmt = (n: number) =>
