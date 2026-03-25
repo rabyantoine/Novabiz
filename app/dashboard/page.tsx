@@ -218,13 +218,16 @@ export default function Dashboard() {
       {/* Nav */}
       <nav style={{ background: '#0B1F45', padding: '0 2rem', height: '64px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'sticky', top: 0, zIndex: 10 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '32px' }}>
-          <div style={{ fontFamily: 'Georgia,serif', fontSize: '20px', fontWeight: '700', color: '#fff' }}>
+          <a href="/dashboard" style={{ fontFamily: 'Georgia,serif', fontSize: '20px', fontWeight: '700', color: '#fff', textDecoration: 'none' }}>
             Nova<span style={{ color: '#C8973A' }}>Biz</span>
-          </div>
+          </a>
           <div style={{ display: 'flex', gap: '4px' }}>
             {[
               { label: 'Dashboard', href: '/dashboard', active: true },
               { label: 'Factures', href: '/factures', active: false },
+              { label: 'Devis', href: '/devis', active: false },
+              { label: 'CRM', href: '/crm', active: false },
+              { label: 'Planning', href: '/planning', active: false },
             ].map(l => (
               <a key={l.href} href={l.href} style={{
                 fontSize: '13px',

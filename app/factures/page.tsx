@@ -94,16 +94,31 @@ export default function Factures() {
   return (
     <div style={{ minHeight: '100vh', background: '#FAF8F4', fontFamily: 'sans-serif' }}>
       {/* Nav */}
-      <nav style={{ background: '#0B1F45', padding: '0 2rem', height: '64px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
+      <nav style={{ background: '#0B1F45', padding: '0 2rem', height: '64px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'sticky', top: 0, zIndex: 10 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '32px' }}>
           <a href="/dashboard" style={{ fontFamily: 'Georgia,serif', fontSize: '20px', fontWeight: '700', color: '#fff', textDecoration: 'none' }}>
             Nova<span style={{ color: '#C8973A' }}>Biz</span>
           </a>
-          <a href="/factures" style={{ fontSize: '14px', color: '#C8973A', textDecoration: 'none', fontWeight: '500' }}>Factures</a>
+          <div style={{ display: 'flex', gap: '4px' }}>
+            {([
+              { label: 'Dashboard', href: '/dashboard', active: false },
+              { label: 'Factures', href: '/factures', active: true },
+              { label: 'Devis', href: '/devis', active: false },
+              { label: 'CRM', href: '/crm', active: false },
+              { label: 'Planning', href: '/planning', active: false },
+            ] as const).map(l => (
+              <a key={l.href} href={l.href} style={{
+                fontSize: '13px', fontWeight: '500', textDecoration: 'none',
+                padding: '6px 12px', borderRadius: '8px',
+                color: l.active ? '#C8973A' : 'rgba(255,255,255,0.55)',
+                background: l.active ? 'rgba(200,151,58,0.12)' : 'transparent',
+              }}>{l.label}</a>
+            ))}
+          </div>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-          <span style={{ fontSize: '14px', color: 'rgba(255,255,255,0.6)' }}>{user.email}</span>
-          <button onClick={handleLogout} style={{ background: 'transparent', border: '1px solid rgba(255,255,255,0.3)', color: '#fff', padding: '7px 16px', borderRadius: '8px', fontSize: '13px', cursor: 'pointer' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <span style={{ fontSize: '13px', color: 'rgba(255,255,255,0.5)' }}>{user.email}</span>
+          <button onClick={handleLogout} style={{ background: 'transparent', border: '1px solid rgba(255,255,255,0.2)', color: 'rgba(255,255,255,0.7)', padding: '6px 14px', borderRadius: '8px', fontSize: '12px', cursor: 'pointer' }}>
             Déconnexion
           </button>
         </div>
