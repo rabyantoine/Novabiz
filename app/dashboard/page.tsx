@@ -227,6 +227,7 @@ export default function Dashboard() {
               { label: 'Factures', href: '/factures', active: false },
               { label: 'Devis', href: '/devis', active: false },
               { label: 'CRM', href: '/crm', active: false },
+              { label: 'Frais', href: '/frais', active: false },
               { label: 'Planning', href: '/planning', active: false },
             ].map(l => (
               <a key={l.href} href={l.href} style={{

@@ -105,6 +105,7 @@ export default function Factures() {
               { label: 'Factures', href: '/factures', active: true },
               { label: 'Devis', href: '/devis', active: false },
               { label: 'CRM', href: '/crm', active: false },
+              { label: 'Frais', href: '/frais', active: false },
               { label: 'Planning', href: '/planning', active: false },
             ] as const).map(l => (
               <a key={l.href} href={l.href} style={{
