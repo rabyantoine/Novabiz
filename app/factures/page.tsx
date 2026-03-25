@@ -4,9 +4,12 @@ import { supabase } from '../../lib/supabase'
 
 type Facture = {
   id: string
-  client: string
-  montant: number
+  client_nom: string
+  montant_ht: number
+  tva_montant: number | null
+  montant_ttc: number | null
   description: string
+  date_emission: string
   date_echeance: string
   statut: 'brouillon' | 'envoyée' | 'payée'
   created_at: string
@@ -25,8 +28,9 @@ export default function Factures() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [form, setForm] = useState({
-    client: '',
-    montant: '',
+    client_nom: '',
+    montant_ht: '',
+    taux_tva: '20',
     description: '',
     date_echeance: '',
     statut: 'brouillon',
@@ -53,20 +57,25 @@ export default function Factures() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!form.client || !form.montant) { setError('Client et montant requis.'); return }
+    if (!form.client_nom || !form.montant_ht) { setError('Client et montant requis.'); return }
     setLoading(true)
     setError('')
+    const ht = parseFloat(form.montant_ht)
+    const tva = parseFloat(form.taux_tva) || 0
     const { error: err } = await supabase.from('factures').insert({
       user_id: user.id,
-      client: form.client,
-      montant: parseFloat(form.montant),
+      client_nom: form.client_nom,
+      montant_ht: ht,
+      tva,
+      tva_montant: ht * (tva / 100),
+      montant_ttc: ht * (1 + tva / 100),
       description: form.description,
       date_echeance: form.date_echeance || null,
       statut: form.statut,
     })
     setLoading(false)
     if (err) { setError(err.message); return }
-    setForm({ client: '', montant: '', description: '', date_echeance: '', statut: 'brouillon' })
+    setForm({ client_nom: '', montant_ht: '', taux_tva: '20', description: '', date_echeance: '', statut: 'brouillon' })
     setShowForm(false)
     fetchFactures(user.id)
   }
@@ -86,8 +95,8 @@ export default function Factures() {
     window.location.href = '/login'
   }
 
-  const totalPayé = factures.filter(f => f.statut === 'payée').reduce((s, f) => s + f.montant, 0)
-  const totalImpayé = factures.filter(f => f.statut === 'envoyée').reduce((s, f) => s + f.montant, 0)
+  const totalPayé = factures.filter(f => f.statut === 'payée').reduce((s, f) => s + (Number(f.montant_ht) || 0), 0)
+  const totalImpayé = factures.filter(f => f.statut === 'envoyée').reduce((s, f) => s + (Number(f.montant_ht) || 0), 0)
 
   if (!user) return <div style={{ background: '#0B1F45', minHeight: '100vh' }}></div>
 
@@ -167,20 +176,20 @@ export default function Factures() {
                   <input
                     type="text"
                     placeholder="Nom du client"
-                    value={form.client}
-                    onChange={e => setForm(f => ({ ...f, client: e.target.value }))}
+                    value={form.client_nom}
+                    onChange={e => setForm(f => ({ ...f, client_nom: e.target.value }))}
                     style={{ width: '100%', padding: '10px 12px', border: '1px solid rgba(11,31,69,0.2)', borderRadius: '8px', fontSize: '14px', outline: 'none', boxSizing: 'border-box' }}
                   />
                 </div>
                 <div>
-                  <label style={{ display: 'block', fontSize: '13px', fontWeight: '600', color: '#0B1F45', marginBottom: '6px' }}>Montant (€) *</label>
+                  <label style={{ display: 'block', fontSize: '13px', fontWeight: '600', color: '#0B1F45', marginBottom: '6px' }}>Montant HT (€) *</label>
                   <input
                     type="number"
                     placeholder="0.00"
                     min="0"
                     step="0.01"
-                    value={form.montant}
-                    onChange={e => setForm(f => ({ ...f, montant: e.target.value }))}
+                    value={form.montant_ht}
+                    onChange={e => setForm(f => ({ ...f, montant_ht: e.target.value }))}
                     style={{ width: '100%', padding: '10px 12px', border: '1px solid rgba(11,31,69,0.2)', borderRadius: '8px', fontSize: '14px', outline: 'none', boxSizing: 'border-box' }}
                   />
                 </div>
@@ -193,6 +202,19 @@ export default function Factures() {
                     rows={3}
                     style={{ width: '100%', padding: '10px 12px', border: '1px solid rgba(11,31,69,0.2)', borderRadius: '8px', fontSize: '14px', outline: 'none', resize: 'vertical', boxSizing: 'border-box' }}
                   />
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: '13px', fontWeight: '600', color: '#0B1F45', marginBottom: '6px' }}>TVA (%)</label>
+                  <select
+                    value={form.taux_tva}
+                    onChange={e => setForm(f => ({ ...f, taux_tva: e.target.value }))}
+                    style={{ width: '100%', padding: '10px 12px', border: '1px solid rgba(11,31,69,0.2)', borderRadius: '8px', fontSize: '14px', outline: 'none', background: '#fff', boxSizing: 'border-box' }}
+                  >
+                    <option value="0">0% (exonéré)</option>
+                    <option value="5.5">5,5%</option>
+                    <option value="10">10%</option>
+                    <option value="20">20%</option>
+                  </select>
                 </div>
                 <div>
                   <label style={{ display: 'block', fontSize: '13px', fontWeight: '600', color: '#0B1F45', marginBottom: '6px' }}>Date d'échéance</label>
@@ -258,13 +280,16 @@ export default function Factures() {
                 {factures.map((f, i) => (
                   <tr key={f.id} style={{ borderBottom: i < factures.length - 1 ? '1px solid rgba(11,31,69,0.06)' : 'none' }}>
                     <td style={{ padding: '16px 20px' }}>
-                      <div style={{ fontWeight: '600', fontSize: '14px', color: '#0B1F45' }}>{f.client}</div>
+                      <div style={{ fontWeight: '600', fontSize: '14px', color: '#0B1F45' }}>{f.client_nom}</div>
                       {f.description && <div style={{ fontSize: '12px', color: '#8A92A3', marginTop: '2px', maxWidth: '240px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{f.description}</div>}
                     </td>
                     <td style={{ padding: '16px 20px' }}>
                       <span style={{ fontFamily: 'Georgia,serif', fontSize: '15px', fontWeight: '700', color: '#0B1F45' }}>
-                        {f.montant.toLocaleString('fr-FR')} €
+                        {Number(f.montant_ht).toLocaleString('fr-FR')} € HT
                       </span>
+                      {f.montant_ttc && (
+                        <div style={{ fontSize: '11px', color: '#8A92A3' }}>{Number(f.montant_ttc).toLocaleString('fr-FR')} € TTC</div>
+                      )}
                     </td>
                     <td style={{ padding: '16px 20px', fontSize: '13px', color: '#8A92A3' }}>
                       {f.date_echeance ? new Date(f.date_echeance).toLocaleDateString('fr-FR') : '—'}
