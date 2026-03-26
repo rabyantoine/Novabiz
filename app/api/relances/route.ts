@@ -16,7 +16,6 @@ export async function POST(req: NextRequest) {
     const message = await client.messages.create({
       model: 'claude-opus-4-6',
       max_tokens: 2048,
-      thinking: { type: 'adaptive' },
       messages: [{
         role: 'user',
         content: `Tu es un assistant pour une TPE/PME française. Génère un email de relance de facture impayée.
