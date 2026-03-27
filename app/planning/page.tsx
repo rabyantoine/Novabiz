@@ -1,6 +1,7 @@
 'use client'
 import { useEffect, useState, useRef } from 'react'
 import { supabase } from '../../lib/supabase'
+import SkeletonCalendar from '../components/SkeletonCalendar'
 
 type PlanItem = {
   id: string
@@ -66,6 +67,7 @@ export default function Planning() {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
   const [detail, setDetail] = useState<PlanItem | null>(null)
+  const [loading, setLoading] = useState(true)
   const modalRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -73,7 +75,8 @@ export default function Planning() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { window.location.href = '/login'; return }
       setUser(user)
-      fetchItems(user.id, year, month)
+      await fetchItems(user.id, year, month)
+      setLoading(false)
     }
     init()
   }, [])
@@ -194,7 +197,7 @@ export default function Planning() {
     ...Array(totalCells - startDow - daysInMonth).fill(null),
   ]
 
-  if (!user) return <div style={{ background: '#0B1F45', minHeight: '100vh' }} />
+  if (loading) return <SkeletonCalendar />
 
   return (
     <div style={{ minHeight: '100vh', background: '#FAF8F4', fontFamily: 'sans-serif' }}>

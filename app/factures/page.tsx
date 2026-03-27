@@ -1,6 +1,7 @@
 'use client'
 import { useEffect, useState } from 'react'
 import { supabase } from '../../lib/supabase'
+import SkeletonLoader from '../components/SkeletonLoader'
 
 type Facture = {
   id: string
@@ -25,6 +26,7 @@ export default function Factures() {
   const [user, setUser] = useState<any>(null)
   const [factures, setFactures] = useState<Facture[]>([])
   const [showForm, setShowForm] = useState(false)
+  const [dataLoading, setDataLoading] = useState(true)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [form, setForm] = useState({
@@ -41,7 +43,8 @@ export default function Factures() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { window.location.href = '/login'; return }
       setUser(user)
-      fetchFactures(user.id)
+      await fetchFactures(user.id)
+      setDataLoading(false)
     }
     init()
   }, [])
@@ -98,7 +101,7 @@ export default function Factures() {
   const totalPayé = factures.filter(f => f.statut === 'payée').reduce((s, f) => s + (Number(f.montant_ht) || 0), 0)
   const totalImpayé = factures.filter(f => f.statut === 'envoyée').reduce((s, f) => s + (Number(f.montant_ht) || 0), 0)
 
-  if (!user) return <div style={{ background: '#0B1F45', minHeight: '100vh' }}></div>
+  if (dataLoading) return <SkeletonLoader rows={6} stats={3} cols={[28, 18, 14, 14, 12, 10]} />
 
   return (
     <div style={{ minHeight: '100vh', background: '#FAF8F4', fontFamily: 'sans-serif' }}>

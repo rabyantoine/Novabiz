@@ -1,6 +1,7 @@
 'use client'
 import { useEffect, useState } from 'react'
 import { supabase } from '../../lib/supabase'
+import SkeletonLoader from '../components/SkeletonLoader'
 
 type Devis = {
   id: string
@@ -199,11 +200,7 @@ export default function DevisPage() {
   const ht = parseFloat(form.montant_ht) || 0
   const ttcPreview = ht * (1 + (parseFloat(form.taux_tva) || 0) / 100)
 
-  if (loading) return (
-    <div style={{ background: '#0B1F45', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <div style={{ width: '32px', height: '32px', border: '3px solid rgba(200,151,58,0.3)', borderTopColor: '#C8973A', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
-      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
-    </div>
+  if (loading) return <SkeletonLoader rows={5} stats={3} cols={[28, 18, 14, 12, 12, 10]} />
   )
 
   return (

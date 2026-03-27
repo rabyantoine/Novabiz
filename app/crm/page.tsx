@@ -1,6 +1,7 @@
 'use client'
 import { useEffect, useState } from 'react'
 import { supabase } from '../../lib/supabase'
+import SkeletonLoader from '../components/SkeletonLoader'
 
 type Client = {
   id: string
@@ -173,12 +174,7 @@ export default function CRM() {
     return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear()
   }).length
 
-  if (loading) return (
-    <div style={{ background: '#0B1F45', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <div style={{ width: '32px', height: '32px', border: '3px solid rgba(200,151,58,0.3)', borderTopColor: '#C8973A', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
-      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
-    </div>
-  )
+  if (loading) return <SkeletonLoader rows={6} stats={4} cols={[26, 18, 12, 10, 12, 14]} />
 
   return (
     <div style={{ minHeight: '100vh', background: '#FAF8F4', fontFamily: 'sans-serif' }}>
