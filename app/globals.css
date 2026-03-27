@@ -24,3 +24,40 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* ─── NovaBiz interactive elements ─── */
+
+/* Smooth transitions on all buttons */
+button {
+  transition: box-shadow 0.2s ease, transform 0.2s ease, filter 0.2s ease;
+}
+
+/* Hover: slight elevation + brightness shift */
+button:not(:disabled):hover {
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+  transform: translateY(-1px);
+  filter: brightness(0.92);
+}
+
+/* Active: press-down feedback */
+button:not(:disabled):active {
+  transform: translateY(0px);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  filter: brightness(0.86);
+}
+
+/* Smooth transitions on inputs, textareas, selects */
+input,
+textarea,
+select {
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* Gold focus ring */
+input:focus,
+textarea:focus,
+select:focus {
+  outline: none !important;
+  border-color: #C8973A !important;
+  box-shadow: 0 0 0 3px rgba(200, 151, 58, 0.15) !important;
+}
