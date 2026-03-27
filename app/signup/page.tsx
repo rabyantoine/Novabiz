@@ -23,12 +23,12 @@ export default function Signup() {
         <div style={{marginBottom:'16px'}}>
           <label style={{fontSize:'12px',fontWeight:'600',color:'#4A5568',display:'block',marginBottom:'6px',textTransform:'uppercase',letterSpacing:'0.05em'}}>Email</label>
           <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="votre@email.com"
-            style={{width:'100%',border:'1px solid rgba(11,31,69,0.2)',borderRadius:'10px',padding:'10px 14px',fontSize:'14px',outline:'none'}}/>
+            style={{width:'100%',border:'1px solid rgba(11,31,69,0.2)',borderRadius:'10px',padding:'10px 14px',fontSize:'14px',outline:'none',color:'#0B1F45',background:'#fff'}}/>
         </div>
         <div style={{marginBottom:'24px'}}>
           <label style={{fontSize:'12px',fontWeight:'600',color:'#4A5568',display:'block',marginBottom:'6px',textTransform:'uppercase',letterSpacing:'0.05em'}}>Mot de passe</label>
           <input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="••••••••"
-            style={{width:'100%',border:'1px solid rgba(11,31,69,0.2)',borderRadius:'10px',padding:'10px 14px',fontSize:'14px',outline:'none'}}/>
+            style={{width:'100%',border:'1px solid rgba(11,31,69,0.2)',borderRadius:'10px',padding:'10px 14px',fontSize:'14px',outline:'none',color:'#0B1F45',background:'#fff'}}/>
         </div>
         {message && <p style={{color: message.includes('erreur') ? 'red' : '#0A6640', fontSize:'13px',marginBottom:'16px'}}>{message}</p>}
         <button onClick={handleSignup}
