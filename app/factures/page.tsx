@@ -264,10 +264,25 @@ export default function Factures() {
         {/* Liste des factures */}
         <div style={{ background: '#fff', border: '1px solid rgba(11,31,69,0.1)', borderRadius: '16px', overflow: 'hidden' }}>
           {factures.length === 0 ? (
-            <div style={{ padding: '48px', textAlign: 'center' }}>
-              <div style={{ fontSize: '32px', marginBottom: '12px' }}>📄</div>
-              <p style={{ fontFamily: 'Georgia,serif', fontSize: '16px', fontWeight: '700', color: '#0B1F45', margin: '0 0 6px' }}>Aucune facture pour l'instant</p>
-              <p style={{ fontSize: '14px', color: '#8A92A3', margin: 0 }}>Cliquez sur « + Nouvelle facture » pour commencer.</p>
+            <div style={{ margin: '16px', borderRadius: '14px', background: 'rgba(11,31,69,0.02)', border: '2px dashed rgba(11,31,69,0.1)', padding: '64px 32px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px' }}>
+              <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: 'rgba(200,151,58,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <svg width="36" height="36" viewBox="0 0 48 48" fill="none" stroke="#C8973A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="10" y="6" width="28" height="36" rx="3"/>
+                  <line x1="16" y1="17" x2="32" y2="17"/>
+                  <line x1="16" y1="24" x2="32" y2="24"/>
+                  <line x1="16" y1="31" x2="24" y2="31"/>
+                </svg>
+              </div>
+              <div style={{ textAlign: 'center' }}>
+                <p style={{ fontFamily: 'Georgia,serif', fontSize: '18px', fontWeight: '700', color: '#0B1F45', margin: '0 0 8px' }}>Aucune facture pour l'instant</p>
+                <p style={{ fontSize: '14px', color: '#8A92A3', margin: 0, maxWidth: '320px', lineHeight: '1.5' }}>Créez votre première facture et commencez à suivre votre chiffre d'affaires.</p>
+              </div>
+              <button
+                onClick={() => { setShowForm(true); setError('') }}
+                style={{ marginTop: '8px', background: '#C8973A', color: '#fff', border: 'none', padding: '11px 28px', borderRadius: '10px', fontSize: '14px', fontWeight: '600', cursor: 'pointer' }}
+              >
+                + Créer ma première facture
+              </button>
             </div>
           ) : (
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>

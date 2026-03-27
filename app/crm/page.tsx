@@ -326,15 +326,31 @@ export default function CRM() {
             {/* Table */}
             <div style={{ background: '#fff', border: '1px solid rgba(11,31,69,0.1)', borderRadius: '16px', overflow: 'hidden' }}>
               {filtered.length === 0 ? (
-                <div style={{ padding: '56px', textAlign: 'center' }}>
-                  <div style={{ fontSize: '36px', marginBottom: '12px' }}>👥</div>
-                  <p style={{ fontFamily: 'Georgia,serif', fontSize: '16px', fontWeight: '700', color: '#0B1F45', margin: '0 0 6px' }}>
-                    {search ? 'Aucun résultat' : 'Aucun client pour l\'instant'}
-                  </p>
-                  <p style={{ fontSize: '14px', color: '#8A92A3', margin: 0 }}>
-                    {search ? 'Essayez un autre terme.' : 'Cliquez sur « + Nouveau client » pour commencer.'}
-                  </p>
-                </div>
+                search ? (
+                  <div style={{ padding: '56px', textAlign: 'center' }}>
+                    <p style={{ fontFamily: 'Georgia,serif', fontSize: '16px', fontWeight: '700', color: '#0B1F45', margin: '0 0 6px' }}>Aucun résultat</p>
+                    <p style={{ fontSize: '14px', color: '#8A92A3', margin: 0 }}>Essayez un autre terme de recherche.</p>
+                  </div>
+                ) : (
+                  <div style={{ margin: '16px', borderRadius: '14px', background: 'rgba(11,31,69,0.02)', border: '2px dashed rgba(11,31,69,0.1)', padding: '64px 32px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px' }}>
+                    <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: 'rgba(200,151,58,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <svg width="36" height="36" viewBox="0 0 48 48" fill="none" stroke="#C8973A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <circle cx="24" cy="16" r="9"/>
+                        <path d="M7 42c0-9.389 7.611-17 17-17s17 7.611 17 17"/>
+                      </svg>
+                    </div>
+                    <div style={{ textAlign: 'center' }}>
+                      <p style={{ fontFamily: 'Georgia,serif', fontSize: '18px', fontWeight: '700', color: '#0B1F45', margin: '0 0 8px' }}>Votre carnet d'adresses est vide</p>
+                      <p style={{ fontSize: '14px', color: '#8A92A3', margin: 0, maxWidth: '340px', lineHeight: '1.5' }}>Ajoutez vos premiers clients pour centraliser leurs informations et suivre votre activité.</p>
+                    </div>
+                    <button
+                      onClick={openAdd}
+                      style={{ marginTop: '8px', background: '#C8973A', color: '#fff', border: 'none', padding: '11px 28px', borderRadius: '10px', fontSize: '14px', fontWeight: '600', cursor: 'pointer' }}
+                    >
+                      + Ajouter mon premier client
+                    </button>
+                  </div>
+                )
               ) : (
                 <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                   <thead>

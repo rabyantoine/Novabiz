@@ -347,12 +347,25 @@ export default function Frais() {
             {/* List */}
             <div style={{ background: '#fff', border: '1px solid rgba(11,31,69,0.1)', borderRadius: '16px', overflow: 'hidden' }}>
               {filtered.length === 0 ? (
-                <div style={{ padding: '56px', textAlign: 'center' }}>
-                  <div style={{ fontSize: '36px', marginBottom: '12px' }}>🧾</div>
-                  <p style={{ fontFamily: 'Georgia,serif', fontSize: '16px', fontWeight: '700', color: '#0B1F45', margin: '0 0 6px' }}>
-                    Aucune dépense ce mois
-                  </p>
-                  <p style={{ fontSize: '14px', color: '#8A92A3', margin: 0 }}>Cliquez sur « + Ajouter un frais » pour commencer.</p>
+                <div style={{ margin: '16px', borderRadius: '14px', background: 'rgba(11,31,69,0.02)', border: '2px dashed rgba(11,31,69,0.1)', padding: '64px 32px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px' }}>
+                  <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: 'rgba(200,151,58,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <svg width="36" height="36" viewBox="0 0 48 48" fill="none" stroke="#C8973A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M10 6h28v36l-4-3-5 3-5-3-5 3-5-3-4 3V6z"/>
+                      <line x1="16" y1="18" x2="32" y2="18"/>
+                      <line x1="16" y1="25" x2="32" y2="25"/>
+                      <line x1="16" y1="32" x2="24" y2="32"/>
+                    </svg>
+                  </div>
+                  <div style={{ textAlign: 'center' }}>
+                    <p style={{ fontFamily: 'Georgia,serif', fontSize: '18px', fontWeight: '700', color: '#0B1F45', margin: '0 0 8px' }}>Aucune dépense ce mois</p>
+                    <p style={{ fontSize: '14px', color: '#8A92A3', margin: 0, maxWidth: '340px', lineHeight: '1.5' }}>Enregistrez vos notes de frais pour suivre vos charges et optimiser votre marge nette.</p>
+                  </div>
+                  <button
+                    onClick={openAdd}
+                    style={{ marginTop: '8px', background: '#C8973A', color: '#fff', border: 'none', padding: '11px 28px', borderRadius: '10px', fontSize: '14px', fontWeight: '600', cursor: 'pointer' }}
+                  >
+                    + Ajouter ma première dépense
+                  </button>
                 </div>
               ) : (
                 <table style={{ width: '100%', borderCollapse: 'collapse' }}>

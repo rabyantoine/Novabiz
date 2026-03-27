@@ -393,13 +393,36 @@ export default function DevisPage() {
         {/* Table */}
         <div style={{ background: '#fff', border: '1px solid rgba(11,31,69,0.1)', borderRadius: '16px', overflow: 'hidden' }}>
           {filtered.length === 0 ? (
-            <div style={{ padding: '56px', textAlign: 'center' }}>
-              <div style={{ fontSize: '36px', marginBottom: '12px' }}>📄</div>
-              <p style={{ fontFamily: 'Georgia,serif', fontSize: '16px', fontWeight: '700', color: '#0B1F45', margin: '0 0 6px' }}>
-                {filterStatut !== 'tous' ? `Aucun devis "${filterStatut}"` : 'Aucun devis pour l\'instant'}
-              </p>
-              <p style={{ fontSize: '14px', color: '#8A92A3', margin: 0 }}>Cliquez sur « + Nouveau devis » pour commencer.</p>
-            </div>
+            filterStatut !== 'tous' ? (
+              <div style={{ padding: '56px', textAlign: 'center' }}>
+                <p style={{ fontFamily: 'Georgia,serif', fontSize: '16px', fontWeight: '700', color: '#0B1F45', margin: '0 0 6px' }}>
+                  Aucun devis « {filterStatut} »
+                </p>
+                <p style={{ fontSize: '14px', color: '#8A92A3', margin: 0 }}>Changez de filtre ou créez un nouveau devis.</p>
+              </div>
+            ) : (
+              <div style={{ margin: '16px', borderRadius: '14px', background: 'rgba(11,31,69,0.02)', border: '2px dashed rgba(11,31,69,0.1)', padding: '64px 32px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px' }}>
+                <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: 'rgba(200,151,58,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <svg width="36" height="36" viewBox="0 0 48 48" fill="none" stroke="#C8973A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="12" y="8" width="24" height="32" rx="3"/>
+                    <path d="M20 8v-2a4 4 0 018 0v2"/>
+                    <line x1="18" y1="21" x2="30" y2="21"/>
+                    <line x1="18" y1="27" x2="30" y2="27"/>
+                    <line x1="18" y1="33" x2="25" y2="33"/>
+                  </svg>
+                </div>
+                <div style={{ textAlign: 'center' }}>
+                  <p style={{ fontFamily: 'Georgia,serif', fontSize: '18px', fontWeight: '700', color: '#0B1F45', margin: '0 0 8px' }}>Aucun devis pour l'instant</p>
+                  <p style={{ fontSize: '14px', color: '#8A92A3', margin: 0, maxWidth: '340px', lineHeight: '1.5' }}>Rédigez votre premier devis en quelques clics et convertissez-le en facture une fois accepté.</p>
+                </div>
+                <button
+                  onClick={openAdd}
+                  style={{ marginTop: '8px', background: '#C8973A', color: '#fff', border: 'none', padding: '11px 28px', borderRadius: '10px', fontSize: '14px', fontWeight: '600', cursor: 'pointer' }}
+                >
+                  + Créer mon premier devis
+                </button>
+              </div>
+            )
           ) : (
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
               <thead>
