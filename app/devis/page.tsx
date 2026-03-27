@@ -201,7 +201,6 @@ export default function DevisPage() {
   const ttcPreview = ht * (1 + (parseFloat(form.taux_tva) || 0) / 100)
 
   if (loading) return <SkeletonLoader rows={5} stats={3} cols={[28, 18, 14, 12, 12, 10]} />
-  )
 
   return (
     <div style={{ minHeight: '100vh', background: '#FAF8F4', fontFamily: 'sans-serif' }}>
