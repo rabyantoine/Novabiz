@@ -230,6 +230,8 @@ export default function Dashboard() {
               { label: 'Frais', href: '/frais', active: false },
               { label: 'Relances', href: '/relances', active: false },
               { label: 'Planning', href: '/planning', active: false },
+              { label: 'Rapports', href: '/rapports', active: false },
+              { label: 'Paramètres', href: '/parametres', active: false },
             ].map(l => (
               <a key={l.href} href={l.href} style={{
                 fontSize: '13px',

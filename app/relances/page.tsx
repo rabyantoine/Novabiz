@@ -29,6 +29,8 @@ const NAV = [
   { label: 'Frais', href: '/frais' },
   { label: 'Relances', href: '/relances' },
   { label: 'Planning', href: '/planning' },
+  { label: 'Rapports', href: '/rapports' },
+  { label: 'Paramètres', href: '/parametres' },
 ]
 
 const fmt = (n: number) =>
@@ -54,12 +56,15 @@ export default function Relances() {
   const [relances, setRelances] = useState<Record<string, RelanceState>>({})
   const [paid, setPaid] = useState<Set<string>>(new Set())
   const [filter, setFilter] = useState<'toutes' | 'retard' | 'imminente'>('toutes')
+  const [creditsLeft, setCreditsLeft] = useState<number | null>(null)
 
   useEffect(() => {
     const init = async () => {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { window.location.href = '/login'; return }
       setUser(user)
+      const { data: profil } = await supabase.from('profil').select('credits').eq('user_id', user.id).single()
+      setCreditsLeft(profil?.credits ?? 0)
       const { data } = await supabase
         .from('factures')
         .select('id, client_nom, numero_facture, montant_ht, montant_ttc, date_emission, date_echeance, statut')
@@ -76,9 +81,13 @@ export default function Relances() {
     const jours = joursRetard(f.date_echeance)
     setRelances(r => ({ ...r, [f.id]: { loading: true, objet: '', corps: '', error: '', copied: false } }))
     try {
+      const { data: { session } } = await supabase.auth.getSession()
       const res = await fetch('/api/relances', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session?.access_token}`,
+        },
         body: JSON.stringify({
           client_nom: f.client_nom,
           numero_facture: f.numero_facture,
@@ -90,7 +99,14 @@ export default function Relances() {
         }),
       })
       const data = await res.json()
+      if (res.status === 402) {
+        // Plus de crédits
+        setRelances(r => ({ ...r, [f.id]: { loading: false, objet: '', corps: '', error: 'NO_CREDITS', copied: false } }))
+        return
+      }
       if (!res.ok) throw new Error(data.error || 'Erreur serveur')
+      // Mettre à jour le compteur de crédits
+      if (data.credits_restants !== undefined) setCreditsLeft(data.credits_restants)
       setRelances(r => ({ ...r, [f.id]: { loading: false, objet: data.objet, corps: data.corps, error: '', copied: false } }))
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Erreur inconnue'
@@ -149,6 +165,19 @@ export default function Relances() {
           </div>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          {creditsLeft !== null && (
+            <a href="/abonnement" style={{
+              display: 'flex', alignItems: 'center', gap: '6px', textDecoration: 'none',
+              background: creditsLeft === 0 ? 'rgba(220,38,38,0.15)' : 'rgba(200,151,58,0.12)',
+              border: `1px solid ${creditsLeft === 0 ? 'rgba(220,38,38,0.3)' : 'rgba(200,151,58,0.3)'}`,
+              borderRadius: '20px', padding: '4px 12px',
+            }}>
+              <span style={{ fontSize: '14px' }}>⚡</span>
+              <span style={{ fontSize: '13px', fontWeight: '700', color: creditsLeft === 0 ? '#FCA5A5' : '#C8973A' }}>
+                {creditsLeft} crédit{creditsLeft !== 1 ? 's' : ''}
+              </span>
+            </a>
+          )}
           <span style={{ fontSize: '13px', color: 'rgba(255,255,255,0.5)' }}>{user?.email}</span>
           <button onClick={async () => { await supabase.auth.signOut(); window.location.href = '/login' }}
             style={{ background: 'transparent', border: '1px solid rgba(255,255,255,0.2)', color: 'rgba(255,255,255,0.7)', padding: '6px 14px', borderRadius: '8px', fontSize: '12px', cursor: 'pointer' }}>
@@ -273,9 +302,19 @@ export default function Relances() {
                   </div>
 
                   {/* Error */}
-                  {r?.error && (
+                  {r?.error && r.error !== 'NO_CREDITS' && (
                     <div style={{ padding: '12px 24px', background: '#FEF2F2', borderTop: '1px solid rgba(220,38,38,0.15)', fontSize: '13px', color: '#DC2626' }}>
                       ⚠ Erreur : {r.error}
+                    </div>
+                  )}
+                  {r?.error === 'NO_CREDITS' && (
+                    <div style={{ padding: '16px 24px', background: '#FEF3C7', borderTop: '1px solid rgba(217,119,6,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
+                      <span style={{ fontSize: '13px', color: '#92400E', fontWeight: '600' }}>
+                        ⚡ Vous n'avez plus de crédits Relance IA
+                      </span>
+                      <a href="/abonnement" style={{ background: 'linear-gradient(135deg, #C8973A, #e8b85a)', color: '#fff', padding: '7px 16px', borderRadius: '8px', fontSize: '13px', fontWeight: '700', textDecoration: 'none' }}>
+                        Recharger mes crédits →
+                      </a>
                     </div>
                   )}
 
