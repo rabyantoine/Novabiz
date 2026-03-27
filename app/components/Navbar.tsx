@@ -85,13 +85,14 @@ export default function Navbar() {
                 href={l.href}
                 style={{
                   fontSize: '13px',
-                  fontWeight: '500',
+                  fontWeight: isActive ? '700' : '500',
                   color: isActive ? '#C8973A' : 'rgba(255,255,255,0.55)',
                   textDecoration: 'none',
                   padding: '6px 12px',
                   borderRadius: '8px',
-                  background: isActive ? 'rgba(200,151,58,0.12)' : 'transparent',
-                  transition: 'color 0.15s, background 0.15s',
+                  background: 'transparent',
+                  borderBottom: isActive ? '2px solid #C8973A' : '2px solid transparent',
+                  transition: 'color 0.15s, border-color 0.15s',
                 }}
               >
                 {l.label}
