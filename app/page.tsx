@@ -760,19 +760,19 @@ export default function Home() {
                 icon: '📚',
                 title: 'Centre d\'aide',
                 desc: 'Trouvez des réponses à toutes vos questions dans notre documentation complète.',
-                link: '#',
+                link: '/ressources/centre-aide',
               },
               {
                 icon: '📖',
                 title: 'Guides pratiques',
                 desc: 'Des guides pas-à-pas pour configurer NovaBiz et optimiser votre gestion.',
-                link: '#',
+                link: '/ressources/guides',
               },
               {
                 icon: '💡',
                 title: 'Blog & conseils',
                 desc: 'Conseils, actualités fiscales et bonnes pratiques pour les entrepreneurs français.',
-                link: '#',
+                link: '/ressources/blog',
               },
             ].map(card => (
               <a
