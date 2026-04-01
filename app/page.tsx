@@ -468,7 +468,7 @@ export default function Home() {
             </h2>
           </div>
 
-          <div className="steps-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 24, alignItems: 'center' }}>
+          <div className="steps-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 24, alignItems: 'start' }}>
             {[
               {
                 num: '01',
@@ -485,119 +485,24 @@ export default function Home() {
                 title: 'Gérez votre activité',
                 desc: 'Créez devis, factures, relancez les impayés et suivez votre CA en temps réel.',
               },
-            ].map((step, i) => (
-              <div key={step.num} style={{ display: 'contents' }}>
-                <div style={{
-                  background: '#fff',
-                  borderRadius: 16,
-                  padding: '36px 32px',
-                  border: '1.5px solid rgba(11,31,69,0.09)',
-                  position: 'relative',
-                }}>
-                  <div style={{
-                    fontFamily: 'Georgia,serif',
-                    fontSize: 56,
-                    fontWeight: 700,
-                    color: '#C8973A',
-                    lineHeight: 1,
-                    marginBottom: 18,
-                    opacity: 0.85,
-                  }}>{step.num}</div>
-                  <h3 style={{ fontSize: 18, fontWeight: 700, color: '#0B1F45', marginBottom: 12 }}>{step.title}</h3>
-                  <p style={{ fontSize: 14, color: '#5A6B88', lineHeight: 1.7 }}>{step.desc}</p>
-                </div>
-                {i < 2 && (
-                  <div className="step-arrow" style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: 28,
-                    color: '#C8973A',
-                    opacity: 0.5,
-                    margin: '0 -8px',
-                    zIndex: 1,
-                  }}>›</div>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ── 5. TÉMOIGNAGES ──────────────────────────────────── */}
-      <section style={{ background: '#fff', padding: '96px 2rem' }}>
-        <div style={{ maxWidth: 1180, margin: '0 auto' }}>
-          <div style={{ textAlign: 'center', marginBottom: 52 }}>
-            <div style={{ fontSize: 13, fontWeight: 700, color: '#C8973A', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 12 }}>
-              Ils nous font confiance
-            </div>
-            <h2 className="section-title" style={{ fontFamily: 'Georgia,serif', fontSize: 38, fontWeight: 700, color: '#0B1F45', letterSpacing: '-0.01em' }}>
-              Ce qu'en disent nos clients
-            </h2>
-          </div>
-
-          <div className="testimonials-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 24 }}>
-            {[
-              {
-                quote: 'NovaBiz m\'a fait gagner 3h par semaine sur ma gestion. Les relances automatiques ont réduit mes impayés de moitié.',
-                name: 'Sophie Martin',
-                role: 'Consultante RH indépendante',
-                initials: 'SM',
-              },
-              {
-                quote: 'Enfin un outil simple qui fait tout. Devis, factures, relances... Je ne perds plus de temps avec la paperasse.',
-                name: 'Karim Benali',
-                role: 'Gérant TPE BTP',
-                initials: 'KB',
-              },
-              {
-                quote: 'L\'intégration IA pour les relances est bluffante. Mes clients paient plus vite et le ton est toujours adapté.',
-                name: 'Élodie Rousseau',
-                role: 'Directrice agence marketing',
-                initials: 'ER',
-              },
-            ].map(t => (
-              <div key={t.name} style={{
+            ].map(step => (
+              <div key={step.num} style={{
                 background: '#fff',
                 borderRadius: 16,
-                padding: '28px 28px 26px',
+                padding: '36px 32px',
                 border: '1.5px solid rgba(11,31,69,0.09)',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: 20,
               }}>
-                {/* Stars */}
-                <div style={{ fontSize: 16, letterSpacing: 2 }}>⭐⭐⭐⭐⭐</div>
-
-                {/* Quote */}
-                <p style={{
-                  fontSize: 15,
-                  color: '#3D4F6B',
-                  lineHeight: 1.7,
-                  fontStyle: 'italic',
-                  flex: 1,
-                }}>
-                  &ldquo;{t.quote}&rdquo;
-                </p>
-
-                {/* Author */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                  <div style={{
-                    width: 42, height: 42,
-                    borderRadius: '50%',
-                    background: '#0B1F45',
-                    color: '#C8973A',
-                    fontFamily: 'Georgia,serif',
-                    fontWeight: 700,
-                    fontSize: 14,
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    flexShrink: 0,
-                  }}>{t.initials}</div>
-                  <div>
-                    <div style={{ fontSize: 14, fontWeight: 700, color: '#0B1F45' }}>{t.name}</div>
-                    <div style={{ fontSize: 12, color: '#8A99B4', marginTop: 2 }}>{t.role}</div>
-                  </div>
-                </div>
+                <div style={{
+                  fontFamily: 'Georgia,serif',
+                  fontSize: 56,
+                  fontWeight: 700,
+                  color: '#C8973A',
+                  lineHeight: 1,
+                  marginBottom: 18,
+                  opacity: 0.85,
+                }}>{step.num}</div>
+                <h3 style={{ fontSize: 18, fontWeight: 700, color: '#0B1F45', marginBottom: 12 }}>{step.title}</h3>
+                <p style={{ fontSize: 14, color: '#5A6B88', lineHeight: 1.7 }}>{step.desc}</p>
               </div>
             ))}
           </div>
@@ -901,7 +806,82 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── 7. CTA FINAL ────────────────────────────────────── */}
+      {/* ── 7. TÉMOIGNAGES ──────────────────────────────────── */}
+      <section style={{ background: '#fff', padding: '96px 2rem' }}>
+        <div style={{ maxWidth: 1180, margin: '0 auto' }}>
+          <div style={{ textAlign: 'center', marginBottom: 52 }}>
+            <div style={{ fontSize: 13, fontWeight: 700, color: '#C8973A', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 12 }}>
+              Ils nous font confiance
+            </div>
+            <h2 className="section-title" style={{ fontFamily: 'Georgia,serif', fontSize: 38, fontWeight: 700, color: '#0B1F45', letterSpacing: '-0.01em' }}>
+              Ce qu'en disent nos clients
+            </h2>
+          </div>
+
+          <div className="testimonials-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 24 }}>
+            {[
+              {
+                quote: 'NovaBiz m\'a fait gagner 3h par semaine sur ma gestion. Les relances automatiques ont réduit mes impayés de moitié.',
+                name: 'Sophie Martin',
+                role: 'Consultante RH indépendante',
+                initials: 'SM',
+              },
+              {
+                quote: 'Enfin un outil simple qui fait tout. Devis, factures, relances... Je ne perds plus de temps avec la paperasse.',
+                name: 'Karim Benali',
+                role: 'Gérant TPE BTP',
+                initials: 'KB',
+              },
+              {
+                quote: 'L\'intégration IA pour les relances est bluffante. Mes clients paient plus vite et le ton est toujours adapté.',
+                name: 'Élodie Rousseau',
+                role: 'Directrice agence marketing',
+                initials: 'ER',
+              },
+            ].map(t => (
+              <div key={t.name} style={{
+                background: '#fff',
+                borderRadius: 16,
+                padding: '28px 28px 26px',
+                border: '1.5px solid rgba(11,31,69,0.09)',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 20,
+              }}>
+                <div style={{ fontSize: 16, letterSpacing: 2 }}>⭐⭐⭐⭐⭐</div>
+                <p style={{
+                  fontSize: 15,
+                  color: '#3D4F6B',
+                  lineHeight: 1.7,
+                  fontStyle: 'italic',
+                  flex: 1,
+                }}>
+                  &ldquo;{t.quote}&rdquo;
+                </p>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                  <div style={{
+                    width: 42, height: 42,
+                    borderRadius: '50%',
+                    background: '#0B1F45',
+                    color: '#C8973A',
+                    fontFamily: 'Georgia,serif',
+                    fontWeight: 700,
+                    fontSize: 14,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    flexShrink: 0,
+                  }}>{t.initials}</div>
+                  <div>
+                    <div style={{ fontSize: 14, fontWeight: 700, color: '#0B1F45' }}>{t.name}</div>
+                    <div style={{ fontSize: 12, color: '#8A99B4', marginTop: 2 }}>{t.role}</div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── 8. CTA FINAL ────────────────────────────────────── */}
       <section style={{ background: '#0B1F45', padding: '80px 2rem' }}>
         <div style={{ maxWidth: 680, margin: '0 auto', textAlign: 'center' }}>
           <h2 style={{
