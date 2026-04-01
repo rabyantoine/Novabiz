@@ -160,6 +160,23 @@ export default function Home() {
         .fade-up { animation: fadeUp 0.55s ease both; }
         .fade-up-2 { animation: fadeUp 0.55s 0.12s ease both; }
         .fade-up-3 { animation: fadeUp 0.55s 0.24s ease both; }
+
+        @media (max-width: 768px) {
+          .hero-grid { grid-template-columns: 1fr !important; }
+          .hero-mockup { display: none !important; }
+          .hero-title { font-size: 36px !important; }
+          .reassurance-grid { grid-template-columns: repeat(2,1fr) !important; }
+          .features-grid { grid-template-columns: 1fr !important; }
+          .features-tabs { overflow-x: auto; flex-wrap: nowrap !important; justify-content: flex-start !important; padding-bottom: 4px; }
+          .features-tabs::-webkit-scrollbar { display: none; }
+          .pricing-grid { grid-template-columns: 1fr !important; }
+          .resources-grid { grid-template-columns: 1fr !important; }
+          .footer-grid { grid-template-columns: 1fr !important; }
+          .section-title { font-size: 28px !important; }
+          .steps-grid { grid-template-columns: 1fr !important; gap: 0 !important; }
+          .step-arrow { display: none !important; }
+          .testimonials-grid { grid-template-columns: 1fr !important; }
+        }
       `}</style>
 
       {/* ── 1. NAVBAR ───────────────────────────────────────── */}
@@ -257,7 +274,7 @@ export default function Home() {
           gridTemplateColumns: '1fr 1fr',
           gap: 64,
           alignItems: 'center',
-        }}>
+        }} className="hero-grid">
           {/* Left */}
           <div className="fade-up">
             <div style={{
@@ -276,7 +293,7 @@ export default function Home() {
               <span>✦</span> Gestion 100 % française
             </div>
 
-            <h1 style={{
+            <h1 className="hero-title" style={{
               fontFamily: 'Georgia, serif',
               fontSize: 52,
               fontWeight: 700,
@@ -337,7 +354,7 @@ export default function Home() {
           </div>
 
           {/* Right — Dashboard mockup */}
-          <div className="fade-up-2" style={{
+          <div className="fade-up-2 hero-mockup" style={{
             background: '#0B1F45',
             borderRadius: 20,
             padding: 28,
@@ -416,7 +433,7 @@ export default function Home() {
           display: 'grid',
           gridTemplateColumns: 'repeat(4,1fr)',
           gap: 8,
-        }}>
+        }} className="reassurance-grid">
           {[
             { icon: '🇫🇷', text: 'Hébergé en France' },
             { icon: '🔒', text: 'Données sécurisées RGPD' },
@@ -439,20 +456,168 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── 4. FONCTIONNALITÉS ──────────────────────────────── */}
+      {/* ── 4. COMMENT ÇA MARCHE ────────────────────────────── */}
+      <section style={{ background: '#FAF8F4', padding: '96px 2rem' }}>
+        <div style={{ maxWidth: 1180, margin: '0 auto' }}>
+          <div style={{ textAlign: 'center', marginBottom: 56 }}>
+            <div style={{ fontSize: 13, fontWeight: 700, color: '#C8973A', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 12 }}>
+              Simple comme bonjour
+            </div>
+            <h2 className="section-title" style={{ fontFamily: 'Georgia,serif', fontSize: 38, fontWeight: 700, color: '#0B1F45', letterSpacing: '-0.01em' }}>
+              Comment ça marche ?
+            </h2>
+          </div>
+
+          <div className="steps-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 24, alignItems: 'center' }}>
+            {[
+              {
+                num: '01',
+                title: 'Créez votre compte',
+                desc: 'Inscription en 2 minutes, sans carte bancaire. Configurez votre profil entreprise en quelques étapes.',
+              },
+              {
+                num: '02',
+                title: 'Importez vos clients',
+                desc: 'Ajoutez vos clients manuellement ou importez-les via CSV en quelques secondes.',
+              },
+              {
+                num: '03',
+                title: 'Gérez votre activité',
+                desc: 'Créez devis, factures, relancez les impayés et suivez votre CA en temps réel.',
+              },
+            ].map((step, i) => (
+              <div key={step.num} style={{ display: 'contents' }}>
+                <div style={{
+                  background: '#fff',
+                  borderRadius: 16,
+                  padding: '36px 32px',
+                  border: '1.5px solid rgba(11,31,69,0.09)',
+                  position: 'relative',
+                }}>
+                  <div style={{
+                    fontFamily: 'Georgia,serif',
+                    fontSize: 56,
+                    fontWeight: 700,
+                    color: '#C8973A',
+                    lineHeight: 1,
+                    marginBottom: 18,
+                    opacity: 0.85,
+                  }}>{step.num}</div>
+                  <h3 style={{ fontSize: 18, fontWeight: 700, color: '#0B1F45', marginBottom: 12 }}>{step.title}</h3>
+                  <p style={{ fontSize: 14, color: '#5A6B88', lineHeight: 1.7 }}>{step.desc}</p>
+                </div>
+                {i < 2 && (
+                  <div className="step-arrow" style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: 28,
+                    color: '#C8973A',
+                    opacity: 0.5,
+                    margin: '0 -8px',
+                    zIndex: 1,
+                  }}>›</div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── 5. TÉMOIGNAGES ──────────────────────────────────── */}
+      <section style={{ background: '#fff', padding: '96px 2rem' }}>
+        <div style={{ maxWidth: 1180, margin: '0 auto' }}>
+          <div style={{ textAlign: 'center', marginBottom: 52 }}>
+            <div style={{ fontSize: 13, fontWeight: 700, color: '#C8973A', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 12 }}>
+              Ils nous font confiance
+            </div>
+            <h2 className="section-title" style={{ fontFamily: 'Georgia,serif', fontSize: 38, fontWeight: 700, color: '#0B1F45', letterSpacing: '-0.01em' }}>
+              Ce qu'en disent nos clients
+            </h2>
+          </div>
+
+          <div className="testimonials-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 24 }}>
+            {[
+              {
+                quote: 'NovaBiz m\'a fait gagner 3h par semaine sur ma gestion. Les relances automatiques ont réduit mes impayés de moitié.',
+                name: 'Sophie Martin',
+                role: 'Consultante RH indépendante',
+                initials: 'SM',
+              },
+              {
+                quote: 'Enfin un outil simple qui fait tout. Devis, factures, relances... Je ne perds plus de temps avec la paperasse.',
+                name: 'Karim Benali',
+                role: 'Gérant TPE BTP',
+                initials: 'KB',
+              },
+              {
+                quote: 'L\'intégration IA pour les relances est bluffante. Mes clients paient plus vite et le ton est toujours adapté.',
+                name: 'Élodie Rousseau',
+                role: 'Directrice agence marketing',
+                initials: 'ER',
+              },
+            ].map(t => (
+              <div key={t.name} style={{
+                background: '#fff',
+                borderRadius: 16,
+                padding: '28px 28px 26px',
+                border: '1.5px solid rgba(11,31,69,0.09)',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 20,
+              }}>
+                {/* Stars */}
+                <div style={{ fontSize: 16, letterSpacing: 2 }}>⭐⭐⭐⭐⭐</div>
+
+                {/* Quote */}
+                <p style={{
+                  fontSize: 15,
+                  color: '#3D4F6B',
+                  lineHeight: 1.7,
+                  fontStyle: 'italic',
+                  flex: 1,
+                }}>
+                  &ldquo;{t.quote}&rdquo;
+                </p>
+
+                {/* Author */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                  <div style={{
+                    width: 42, height: 42,
+                    borderRadius: '50%',
+                    background: '#0B1F45',
+                    color: '#C8973A',
+                    fontFamily: 'Georgia,serif',
+                    fontWeight: 700,
+                    fontSize: 14,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    flexShrink: 0,
+                  }}>{t.initials}</div>
+                  <div>
+                    <div style={{ fontSize: 14, fontWeight: 700, color: '#0B1F45' }}>{t.name}</div>
+                    <div style={{ fontSize: 12, color: '#8A99B4', marginTop: 2 }}>{t.role}</div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── 6. FONCTIONNALITÉS ──────────────────────────────── */}
       <section id="fonctionnalites" style={{ background: '#fff', padding: '96px 2rem' }}>
         <div style={{ maxWidth: 1180, margin: '0 auto' }}>
           <div style={{ textAlign: 'center', marginBottom: 52 }}>
             <div style={{ fontSize: 13, fontWeight: 700, color: '#C8973A', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 12 }}>
               Ce que NovaBiz fait pour vous
             </div>
-            <h2 style={{ fontFamily: 'Georgia,serif', fontSize: 38, fontWeight: 700, color: '#0B1F45', letterSpacing: '-0.01em' }}>
+            <h2 className="section-title" style={{ fontFamily: 'Georgia,serif', fontSize: 38, fontWeight: 700, color: '#0B1F45', letterSpacing: '-0.01em' }}>
               Tout en un, rien à installer
             </h2>
           </div>
 
           {/* Tabs */}
-          <div style={{ display: 'flex', gap: 8, justifyContent: 'center', marginBottom: 48, flexWrap: 'wrap' }}>
+          <div className="features-tabs" style={{ display: 'flex', gap: 8, justifyContent: 'center', marginBottom: 48, flexWrap: 'wrap' }}>
             {FEATURES.map((f, i) => (
               <button
                 key={f.id}
@@ -478,7 +643,7 @@ export default function Home() {
           </div>
 
           {/* Content */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 56, alignItems: 'center' }}>
+          <div className="features-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 56, alignItems: 'center' }}>
             {/* Text */}
             <div>
               <h3 style={{ fontFamily: 'Georgia,serif', fontSize: 30, fontWeight: 700, color: '#0B1F45', lineHeight: 1.25, marginBottom: 16 }}>
@@ -543,12 +708,12 @@ export default function Home() {
             <div style={{ fontSize: 13, fontWeight: 700, color: '#C8973A', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 12 }}>
               Tarification simple
             </div>
-            <h2 style={{ fontFamily: 'Georgia,serif', fontSize: 38, fontWeight: 700, color: '#0B1F45', letterSpacing: '-0.01em' }}>
+            <h2 className="section-title" style={{ fontFamily: 'Georgia,serif', fontSize: 38, fontWeight: 700, color: '#0B1F45', letterSpacing: '-0.01em' }}>
               Un prix juste pour chaque étape
             </h2>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.4fr', gap: 32, alignItems: 'start' }}>
+          <div className="pricing-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1.4fr', gap: 32, alignItems: 'start' }}>
             {/* Plan list */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               {PLANS.map((p, i) => (
@@ -679,12 +844,12 @@ export default function Home() {
             <div style={{ fontSize: 13, fontWeight: 700, color: '#C8973A', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 12 }}>
               Pour aller plus loin
             </div>
-            <h2 style={{ fontFamily: 'Georgia,serif', fontSize: 38, fontWeight: 700, color: '#0B1F45', letterSpacing: '-0.01em' }}>
+            <h2 className="section-title" style={{ fontFamily: 'Georgia,serif', fontSize: 38, fontWeight: 700, color: '#0B1F45', letterSpacing: '-0.01em' }}>
               Ressources & accompagnement
             </h2>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 24 }}>
+          <div className="resources-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 24 }}>
             {[
               {
                 icon: '📚',
@@ -779,7 +944,7 @@ export default function Home() {
       {/* ── 8. FOOTER ───────────────────────────────────────── */}
       <footer style={{ background: '#070F22', padding: '48px 2rem 32px' }}>
         <div style={{ maxWidth: 1180, margin: '0 auto' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 40, marginBottom: 40 }}>
+          <div className="footer-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 40, marginBottom: 40 }}>
             {/* Brand */}
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
