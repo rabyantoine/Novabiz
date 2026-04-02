@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '../../lib/supabase'
+import Navbar from '../components/Navbar'
 
 type Client = { id: string; nom: string; email: string; telephone: string; ville: string }
 type Devis = { id: string; client_id: string | null; client_nom: string; titre: string; montant_ht: number; statut: string; created_at: string }
@@ -71,6 +72,8 @@ export default function ClasseurPage() {
   )
 
   return (
+    <>
+    <Navbar />
     <div style={{ minHeight: '100vh', background: '#FAF8F4', fontFamily: 'sans-serif' }}>
       <div style={{ maxWidth: 900, margin: '0 auto', padding: '40px 20px' }}>
 
@@ -207,5 +210,6 @@ export default function ClasseurPage() {
         })}
       </div>
     </div>
+    </>
   )
 }
