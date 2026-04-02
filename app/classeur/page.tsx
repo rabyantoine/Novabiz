@@ -1,8 +1,10 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { supabase } from '../../lib/supabase'
+import { createClient } from '../../lib/supabase'
 import Link from 'next/link'
+
+const supabase = createClient()
 
 type Doc = {
   id: string
@@ -421,7 +423,7 @@ export default function ClasseurPage() {
                 <label style={{ fontSize: 13, fontWeight: 600, color: '#374151', display: 'block', marginBottom: 6 }}>
                   Catégorie
                   <span style={{ fontSize: 11, fontWeight: 400, color: '#94A3B8', marginLeft: 8 }}>
-                    auto-détectée d&apos;après le nom
+                    auto-détectée d'après le nom
                   </span>
                 </label>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 8 }}>
