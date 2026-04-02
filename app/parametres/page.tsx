@@ -11,6 +11,7 @@ const NAV = [
   { label: 'Relances', href: '/relances' },
   { label: 'Planning', href: '/planning' },
   { label: 'Rapports', href: '/rapports' },
+  { label: 'Classeur', href: '/classeur' },
   { label: 'Paramètres', href: '/parametres' },
 ]
 

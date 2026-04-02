@@ -218,6 +218,7 @@ export default function Planning() {
               { label: 'Relances', href: '/relances', active: false },
               { label: 'Planning', href: '/planning', active: true },
               { label: 'Rapports', href: '/rapports', active: false },
+              { label: 'Classeur', href: '/classeur', active: false },
               { label: 'Paramètres', href: '/parametres', active: false },
             ].map(l => (
               <a key={l.href} href={l.href} style={{
