@@ -67,65 +67,78 @@ const FEATURES = [
   },
 ]
 
-const PLANS = [
+const plans = [
   {
-    id: 'freelance',
-    label: 'Freelance',
-    badge: null,
-    price: '19',
-    desc: 'Parfait pour les indépendants et auto-entrepreneurs qui veulent professionnaliser leur gestion.',
+    id: 'solo',
+    label: 'Solo',
+    subtitle: 'Auto-entrepreneur',
+    price: { mensuel: 9, annuel: 7 },
+    popular: false,
+    description: 'L\'essentiel pour facturer et suivre votre activité seul.',
     features: [
-      'Jusqu\'à 20 devis/factures par mois',
-      'CRM jusqu\'à 50 contacts',
-      'Relances automatiques',
-      'Export PDF',
-      'Support email',
+      'Devis & factures illimités',
+      '1 utilisateur',
+      'Notes de frais',
+      'Export comptable CSV',
+      'Classeur Intelligent (50 docs)',
     ],
+    bienvenue: null,
+    cta: 'Commencer gratuitement →',
   },
   {
-    id: 'tpe',
-    label: 'TPE',
-    badge: 'Populaire',
-    price: '39',
-    desc: 'La solution complète pour les petites entreprises en croissance, avec toutes les fonctionnalités avancées.',
+    id: 'starter',
+    label: 'Starter',
+    subtitle: 'TPE · jusqu\'à 5 utilisateurs',
+    price: { mensuel: 29, annuel: 23 },
+    popular: true,
+    description: 'Tout ce qu\'il faut pour piloter une petite structure au quotidien.',
     features: [
-      'Documents illimités',
-      'CRM jusqu\'à 500 contacts',
-      'Relances IA personnalisées',
-      'Tableau de bord complet',
-      'Multi-utilisateurs (3 comptes)',
-      'Support prioritaire',
+      'Tout Solo inclus',
+      'CRM clients complet',
+      '10 relances IA / mois',
+      'Classeur Intelligent (500 docs)',
+      'Tableau de bord',
+      'Support par email',
     ],
+    bienvenue: '15 jours d\'essai gratuit · Sans engagement',
+    cta: 'Commencer gratuitement →',
   },
   {
     id: 'pme',
     label: 'PME',
-    badge: null,
-    price: '79',
-    desc: 'Pour les entreprises qui ont besoin de collaboration avancée et d\'intégrations avec leurs outils existants.',
+    subtitle: 'Jusqu\'à 10 utilisateurs',
+    price: { mensuel: 59, annuel: 47 },
+    popular: false,
+    description: 'La solution complète pour une PME qui veut tout centraliser.',
     features: [
-      'Tout le plan TPE',
-      'CRM contacts illimités',
-      'Multi-utilisateurs illimités',
-      'API & intégrations',
-      'Rapports personnalisés',
-      'Account manager dédié',
+      'Tout Starter inclus',
+      'Relances IA illimitées',
+      'Classeur Intelligent illimité',
+      'Multi-entreprises',
+      'Rapports avancés',
+      'Support prioritaire',
+      'Accès expert-comptable',
     ],
+    bienvenue: '1 mois offert à l\'inscription · Sans engagement',
+    cta: 'Commencer gratuitement →',
   },
   {
-    id: 'entreprise',
+    id: 'enterprise',
     label: 'Entreprise',
-    badge: null,
+    subtitle: 'Utilisateurs illimités',
     price: null,
-    desc: 'Une solution sur mesure pour les grandes structures avec des besoins spécifiques en sécurité et conformité.',
+    popular: false,
+    description: 'Un accompagnement sur-mesure pour les structures plus complexes.',
     features: [
-      'Tout le plan PME',
-      'SSO & SAML',
-      'SLA garanti 99,9%',
-      'Onboarding personnalisé',
-      'Formations équipe',
-      'Contrat sur mesure',
+      'Tout PME inclus',
+      'Intégrations sur-mesure',
+      'SLA garanti',
+      'Onboarding dédié',
+      'Formation équipe incluse',
+      'Facturation électronique 2026',
     ],
+    bienvenue: null,
+    cta: 'Nous contacter',
   },
 ]
 
@@ -134,7 +147,8 @@ const PLANS = [
 export default function Home() {
   const [scrolled, setScrolled] = useState(false)
   const [activeFeature, setActiveFeature] = useState(0)
-  const [activePlan, setActivePlan] = useState(1)
+  const [activePlan, setActivePlan] = useState('starter')
+  const [annuel, setAnnuel] = useState(false)
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 10)
@@ -142,7 +156,6 @@ export default function Home() {
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
 
-  const plan = PLANS[activePlan]
   const feat = FEATURES[activeFeature]
 
   return (
@@ -607,137 +620,185 @@ export default function Home() {
       </section>
 
       {/* ── 5. TARIFS ───────────────────────────────────────── */}
-      <section id="tarifs" style={{ background: '#FAF8F4', padding: '96px 2rem' }}>
-        <div style={{ maxWidth: 1180, margin: '0 auto' }}>
-          <div style={{ textAlign: 'center', marginBottom: 52 }}>
-            <div style={{ fontSize: 13, fontWeight: 700, color: '#C8973A', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 12 }}>
-              Tarification simple
+      <section id="tarifs" style={{ padding: '100px 2rem', background: '#FAF8F4' }}>
+        <div style={{ maxWidth: 1100, margin: '0 auto' }}>
+
+          {/* Titre */}
+          <div style={{ textAlign: 'center', marginBottom: 48 }}>
+            <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#C8973A', marginBottom: 14 }}>
+              Tarifs
             </div>
-            <h2 className="section-title" style={{ fontFamily: 'Georgia,serif', fontSize: 38, fontWeight: 700, color: '#0B1F45', letterSpacing: '-0.01em' }}>
-              Un prix juste pour chaque étape
+            <h2 style={{ fontFamily: 'Georgia, serif', fontSize: 42, fontWeight: 800, color: '#0B1F45', marginBottom: 16 }}>
+              Un seul outil. Tout inclus.
             </h2>
+            <p style={{ fontSize: 16, color: '#64748B', maxWidth: 460, margin: '0 auto 28px' }}>
+              CRM, devis, factures, relances IA, classeur et rapports — dans un seul abonnement.
+            </p>
+
+            {/* Toggle mensuel / annuel */}
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 12, background: '#fff', border: '1px solid #E2E8F0', borderRadius: 100, padding: '6px 8px' }}>
+              <button
+                onClick={() => setAnnuel(false)}
+                style={{
+                  padding: '8px 20px', borderRadius: 100, border: 'none', cursor: 'pointer',
+                  background: !annuel ? '#0B1F45' : 'transparent',
+                  color: !annuel ? '#fff' : '#64748B',
+                  fontWeight: 600, fontSize: 14, transition: 'all 0.2s',
+                }}
+              >Mensuel</button>
+              <button
+                onClick={() => setAnnuel(true)}
+                style={{
+                  padding: '8px 20px', borderRadius: 100, border: 'none', cursor: 'pointer',
+                  background: annuel ? '#0B1F45' : 'transparent',
+                  color: annuel ? '#fff' : '#64748B',
+                  fontWeight: 600, fontSize: 14, transition: 'all 0.2s',
+                  display: 'flex', alignItems: 'center', gap: 8,
+                }}
+              >
+                Annuel
+                <span style={{ background: '#C8973A', color: '#fff', fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 100 }}>-20%</span>
+              </button>
+            </div>
           </div>
 
-          <div className="pricing-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1.4fr', gap: 32, alignItems: 'start' }}>
-            {/* Plan list */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-              {PLANS.map((p, i) => (
+          {/* Layout 2 colonnes */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 40, alignItems: 'start' }}>
+
+            {/* Gauche — liste cliquable */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+              {plans.map(plan => (
                 <button
-                  key={p.id}
-                  onClick={() => setActivePlan(i)}
+                  key={plan.id}
+                  onClick={() => setActivePlan(plan.id)}
                   style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    padding: '18px 22px',
-                    borderRadius: 14,
-                    cursor: 'pointer',
-                    border: activePlan === i ? '2px solid #0B1F45' : '1.5px solid rgba(11,31,69,0.12)',
-                    background: activePlan === i ? '#0B1F45' : '#fff',
-                    color: activePlan === i ? '#fff' : '#0B1F45',
-                    transition: 'all 0.15s',
-                    textAlign: 'left',
+                    background:   activePlan === plan.id ? '#fff' : 'transparent',
+                    border:       activePlan === plan.id ? '1px solid rgba(11,31,69,0.12)' : '1px solid transparent',
+                    borderRadius: 14, padding: '20px 24px', cursor: 'pointer', textAlign: 'left',
+                    transition:   'all 0.18s',
+                    boxShadow:    activePlan === plan.id ? '0 4px 24px rgba(11,31,69,0.08)' : 'none',
                   }}
                 >
-                  <div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                      <span style={{ fontSize: 15, fontWeight: 700 }}>{p.label}</span>
-                      {p.badge && (
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
                         <span style={{
-                          fontSize: 11,
-                          fontWeight: 700,
-                          padding: '2px 8px',
-                          borderRadius: 100,
-                          background: activePlan === i ? '#C8973A' : '#C8973A',
-                          color: '#fff',
-                        }}>{p.badge}</span>
+                          fontSize: 18, fontFamily: 'Georgia, serif', fontWeight: 700,
+                          color: activePlan === plan.id ? '#0B1F45' : '#94A3B8',
+                        }}>{plan.label}</span>
+                        {plan.popular && (
+                          <span style={{ fontSize: 10, fontWeight: 700, background: '#C8973A', color: '#fff', padding: '2px 8px', borderRadius: 100, letterSpacing: '0.06em' }}>
+                            POPULAIRE
+                          </span>
+                        )}
+                      </div>
+                      <div style={{ fontSize: 13, color: '#94A3B8' }}>{plan.subtitle}</div>
+                    </div>
+                    <div style={{ textAlign: 'right' }}>
+                      {plan.price ? (
+                        <>
+                          <span style={{ fontFamily: 'Georgia, serif', fontSize: 28, fontWeight: 800, color: activePlan === plan.id ? '#C8973A' : '#CBD5E1' }}>
+                            {annuel ? plan.price.annuel : plan.price.mensuel}€
+                          </span>
+                          <span style={{ fontSize: 13, color: '#94A3B8' }}>/mois</span>
+                        </>
+                      ) : (
+                        <span style={{ fontFamily: 'Georgia, serif', fontSize: 18, fontWeight: 700, color: activePlan === plan.id ? '#C8973A' : '#CBD5E1' }}>
+                          Sur devis
+                        </span>
                       )}
                     </div>
-                    <div style={{ fontSize: 12, marginTop: 3, color: activePlan === i ? 'rgba(255,255,255,0.60)' : '#8A99B4' }}>
-                      {p.price ? `${p.price} €/mois` : 'Sur devis'}
-                    </div>
                   </div>
-                  <span style={{ fontSize: 16, color: activePlan === i ? '#C8973A' : '#C8973A' }}>›</span>
                 </button>
               ))}
             </div>
 
-            {/* Plan detail */}
-            <div style={{
-              background: '#fff',
-              borderRadius: 20,
-              padding: '36px 36px 32px',
-              border: '1.5px solid rgba(11,31,69,0.10)',
-              boxShadow: '0 8px 40px rgba(11,31,69,0.07)',
-            }}>
-              <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 4 }}>
-                <div style={{ fontSize: 22, fontWeight: 700, color: '#0B1F45', fontFamily: 'Georgia,serif' }}>
-                  {plan.label}
-                </div>
-                {plan.badge && (
-                  <span style={{
-                    fontSize: 12, fontWeight: 700,
-                    padding: '4px 12px',
-                    borderRadius: 100,
-                    background: '#C8973A',
-                    color: '#fff',
-                  }}>{plan.badge}</span>
-                )}
-              </div>
-
-              <div style={{ marginBottom: 16 }}>
-                {plan.price ? (
-                  <div>
-                    <span style={{ fontSize: 46, fontWeight: 800, color: '#0B1F45' }}>{plan.price} €</span>
-                    <span style={{ fontSize: 15, color: '#8A99B4', marginLeft: 4 }}>/mois HT</span>
+            {/* Droite — détail du plan actif */}
+            {(() => {
+              const currentPlan = plans.find(p => p.id === activePlan) ?? plans[1]
+              return (
+                <div style={{
+                  background: '#fff', borderRadius: 20,
+                  border: '1px solid rgba(11,31,69,0.10)',
+                  padding: '32px', boxShadow: '0 8px 40px rgba(11,31,69,0.08)',
+                }}>
+                  <div style={{ marginBottom: 24 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
+                      <h3 style={{ fontFamily: 'Georgia, serif', fontSize: 26, fontWeight: 800, color: '#0B1F45', margin: 0 }}>
+                        {currentPlan.label}
+                      </h3>
+                      {currentPlan.popular && (
+                        <span style={{ fontSize: 10, fontWeight: 700, background: '#C8973A', color: '#fff', padding: '4px 10px', borderRadius: 100 }}>
+                          LE PLUS CHOISI
+                        </span>
+                      )}
+                    </div>
+                    {currentPlan.price ? (
+                      <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
+                        <span style={{ fontFamily: 'Georgia, serif', fontSize: 52, fontWeight: 800, color: '#C8973A', lineHeight: 1 }}>
+                          {annuel ? currentPlan.price.annuel : currentPlan.price.mensuel}€
+                        </span>
+                        <span style={{ fontSize: 14, color: '#94A3B8' }}>/ mois HT</span>
+                      </div>
+                    ) : (
+                      <span style={{ fontFamily: 'Georgia, serif', fontSize: 36, fontWeight: 800, color: '#C8973A' }}>Sur mesure</span>
+                    )}
+                    {annuel && currentPlan.price && (
+                      <p style={{ fontSize: 13, color: '#0F6E56', marginTop: 6, fontWeight: 600 }}>
+                        Soit {currentPlan.price.annuel * 12}€ / an — vous économisez {(currentPlan.price.mensuel - currentPlan.price.annuel) * 12}€
+                      </p>
+                    )}
+                    <p style={{ fontSize: 14, color: '#64748B', marginTop: 12, lineHeight: 1.6 }}>
+                      {currentPlan.description}
+                    </p>
                   </div>
-                ) : (
-                  <div style={{ fontSize: 32, fontWeight: 800, color: '#0B1F45' }}>Sur devis</div>
-                )}
-              </div>
 
-              <p style={{ fontSize: 14, color: '#5A6B88', lineHeight: 1.65, marginBottom: 28 }}>
-                {plan.desc}
-              </p>
+                  <div style={{ borderTop: '1px solid rgba(11,31,69,0.08)', paddingTop: 24, marginBottom: 28 }}>
+                    {currentPlan.features.map(feat => (
+                      <div key={feat} style={{
+                        display: 'flex', alignItems: 'center', gap: 12,
+                        padding: '9px 0', fontSize: 14, color: '#374151',
+                        borderBottom: '1px solid rgba(11,31,69,0.05)',
+                      }}>
+                        <span style={{ color: '#C8973A', fontWeight: 700, flexShrink: 0 }}>✓</span>
+                        {feat}
+                      </div>
+                    ))}
+                  </div>
 
-              <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 32 }}>
-                {plan.features.map(f => (
-                  <li key={f} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                    <span style={{
-                      width: 20, height: 20, borderRadius: '50%',
-                      background: 'rgba(200,151,58,0.12)',
-                      color: '#C8973A',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      fontSize: 11, fontWeight: 700, flexShrink: 0,
-                    }}>✓</span>
-                    <span style={{ fontSize: 14, color: '#3D4F6B' }}>{f}</span>
-                  </li>
-                ))}
-              </ul>
+                  {/* Offre de bienvenue */}
+                  {currentPlan.bienvenue && (
+                    <div style={{
+                      background: '#F0FDF4', border: '1px solid #86EFAC',
+                      borderRadius: 12, padding: '12px 16px', marginBottom: 20,
+                      display: 'flex', gap: 10, alignItems: 'center',
+                    }}>
+                      <span style={{ fontSize: 16 }}>🎁</span>
+                      <div>
+                        <div style={{ fontSize: 12, fontWeight: 700, color: '#166534', marginBottom: 2 }}>Offre de bienvenue</div>
+                        <div style={{ fontSize: 13, color: '#15803D' }}>{currentPlan.bienvenue}</div>
+                      </div>
+                    </div>
+                  )}
 
-              <Link href="/signup" style={{
-                display: 'block',
-                textAlign: 'center',
-                padding: '14px',
-                borderRadius: 12,
-                fontWeight: 700,
-                fontSize: 15,
-                background: '#0B1F45',
-                color: '#fff',
-                boxShadow: '0 4px 16px rgba(11,31,69,0.18)',
-              }}
-                onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = '#162d5e' }}
-                onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = '#0B1F45' }}
-              >
-                {plan.price ? 'Commencer gratuitement' : 'Nous contacter'}
-              </Link>
-
-              {plan.price && (
-                <p style={{ textAlign: 'center', fontSize: 12, color: '#8A99B4', marginTop: 12 }}>
-                  15 jours gratuits · Sans carte bancaire
-                </p>
-              )}
-            </div>
+                  <Link
+                    href="/signup"
+                    style={{
+                      display: 'block', textAlign: 'center', background: '#0B1F45', color: '#fff',
+                      fontWeight: 600, fontSize: 15, padding: '14px', borderRadius: 12,
+                      textDecoration: 'none', transition: 'background 0.15s',
+                    }}
+                    onMouseEnter={(e: React.MouseEvent<HTMLAnchorElement>) => (e.currentTarget as HTMLElement).style.background = '#162F5F'}
+                    onMouseLeave={(e: React.MouseEvent<HTMLAnchorElement>) => (e.currentTarget as HTMLElement).style.background = '#0B1F45'}
+                  >
+                    {currentPlan.id === 'enterprise' ? 'Nous contacter' : 'Commencer gratuitement →'}
+                  </Link>
+                  <p style={{ textAlign: 'center', fontSize: 12, color: '#94A3B8', marginTop: 12 }}>
+                    15 jours gratuits · Sans engagement · Sans carte bancaire
+                  </p>
+                </div>
+              )
+            })()}
           </div>
         </div>
       </section>
