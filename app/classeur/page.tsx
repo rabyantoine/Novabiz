@@ -1,10 +1,10 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { createClient } from '../../lib/supabase'
+import { supabase } from '../../lib/supabase'
 import Link from 'next/link'
 
-const supabase = createClient()
+
 
 type Doc = {
   id: string
