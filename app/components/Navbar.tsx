@@ -7,6 +7,7 @@ const NAV = [
   { label: 'Factures',   href: '/factures' },
   { label: 'Devis',      href: '/devis' },
   { label: 'CRM',        href: '/crm' },
+  { label: 'Classeur',   href: '/classeur' },
   { label: 'Frais',      href: '/frais' },
   { label: 'Relances',   href: '/relances' },
   { label: 'Planning',   href: '/planning' },
