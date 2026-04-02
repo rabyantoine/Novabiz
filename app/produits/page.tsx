@@ -1,9 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { createClient } from '../../lib/supabase'
-
-const supabase = createClient()
+import { supabase } from '../../lib/supabase'
 
 type Produit = {
   id: string
