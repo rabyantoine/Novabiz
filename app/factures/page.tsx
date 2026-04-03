@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../../lib/supabase'
 import SkeletonLoader from '../components/SkeletonLoader'
+import Nav from '@/components/Nav'
 
 type Facture = {
   id: string
@@ -105,41 +106,7 @@ export default function Factures() {
 
   return (
     <div style={{ minHeight: '100vh', background: '#FAF8F4', fontFamily: 'sans-serif' }}>
-      {/* Nav */}
-      <nav style={{ background: '#0B1F45', padding: '0 2rem', height: '64px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'sticky', top: 0, zIndex: 10 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '32px' }}>
-          <a href="/dashboard" style={{ fontFamily: 'Georgia,serif', fontSize: '20px', fontWeight: '700', color: '#fff', textDecoration: 'none' }}>
-            Nova<span style={{ color: '#C8973A' }}>Biz</span>
-          </a>
-          <div style={{ display: 'flex', gap: '4px' }}>
-            {([
-              { label: 'Dashboard', href: '/dashboard', active: false },
-              { label: 'Factures', href: '/factures', active: true },
-              { label: 'Devis', href: '/devis', active: false },
-              { label: 'CRM', href: '/crm', active: false },
-              { label: 'Frais', href: '/frais', active: false },
-              { label: 'Relances', href: '/relances', active: false },
-              { label: 'Planning', href: '/planning', active: false },
-              { label: 'Rapports', href: '/rapports', active: false },
-              { label: 'Classeur', href: '/classeur', active: false },
-              { label: 'Paramètres', href: '/parametres', active: false },
-            ] as const).map(l => (
-              <a key={l.href} href={l.href} style={{
-                fontSize: '13px', fontWeight: '500', textDecoration: 'none',
-                padding: '6px 12px', borderRadius: '8px',
-                color: l.active ? '#C8973A' : 'rgba(255,255,255,0.55)',
-                background: l.active ? 'rgba(200,151,58,0.12)' : 'transparent',
-              }}>{l.label}</a>
-            ))}
-          </div>
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <span style={{ fontSize: '13px', color: 'rgba(255,255,255,0.5)' }}>{user.email}</span>
-          <button onClick={handleLogout} style={{ background: 'transparent', border: '1px solid rgba(255,255,255,0.2)', color: 'rgba(255,255,255,0.7)', padding: '6px 14px', borderRadius: '8px', fontSize: '12px', cursor: 'pointer' }}>
-            Déconnexion
-          </button>
-        </div>
-      </nav>
+      <Nav />
 
       <div style={{ padding: '40px 2rem', maxWidth: '1100px', margin: '0 auto' }}>
         {/* Header */}

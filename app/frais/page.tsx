@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../../lib/supabase'
 import SkeletonLoader from '../components/SkeletonLoader'
+import Nav from '@/components/Nav'
 
 type Charge = {
   id: string
@@ -13,20 +14,6 @@ type Charge = {
   tva_deductible: number
   created_at: string
 }
-
-const NAV = [
-  { label: 'Dashboard', href: '/dashboard' },
-  { label: 'Factures', href: '/factures' },
-  { label: 'Devis', href: '/devis' },
-  { label: 'Catalogue', href: '/produits' },
-  { label: 'CRM', href: '/crm' },
-  { label: 'Frais', href: '/frais' },
-  { label: 'Relances', href: '/relances' },
-  { label: 'Planning', href: '/planning' },
-  { label: 'Rapports', href: '/rapports' },
-  { label: 'Classeur', href: '/classeur' },
-  { label: 'Paramètres', href: '/parametres' },
-]
 
 const CATEGORIES = [
   'Loyer & charges', 'Transport', 'Repas & restauration', 'Téléphone & internet',
@@ -192,31 +179,7 @@ export default function Frais() {
         </div>
       )}
 
-      {/* Nav */}
-      <nav style={{ background: '#0B1F45', padding: '0 2rem', height: '64px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'sticky', top: 0, zIndex: 10 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '32px' }}>
-          <a href="/dashboard" style={{ fontFamily: 'Georgia,serif', fontSize: '20px', fontWeight: '700', color: '#fff', textDecoration: 'none' }}>
-            Nova<span style={{ color: '#C8973A' }}>Biz</span>
-          </a>
-          <div style={{ display: 'flex', gap: '4px' }}>
-            {NAV.map(l => (
-              <a key={l.href} href={l.href} style={{
-                fontSize: '13px', fontWeight: '500', textDecoration: 'none',
-                padding: '6px 12px', borderRadius: '8px',
-                color: l.href === '/frais' ? '#C8973A' : 'rgba(255,255,255,0.55)',
-                background: l.href === '/frais' ? 'rgba(200,151,58,0.12)' : 'transparent',
-              }}>{l.label}</a>
-            ))}
-          </div>
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <span style={{ fontSize: '13px', color: 'rgba(255,255,255,0.5)' }}>{user?.email}</span>
-          <button onClick={async () => { await supabase.auth.signOut(); window.location.href = '/login' }}
-            style={{ background: 'transparent', border: '1px solid rgba(255,255,255,0.2)', color: 'rgba(255,255,255,0.7)', padding: '6px 14px', borderRadius: '8px', fontSize: '12px', cursor: 'pointer' }}>
-            Déconnexion
-          </button>
-        </div>
-      </nav>
+      <Nav />
 
       <div style={{ padding: '36px 2rem', maxWidth: '1200px', margin: '0 auto' }}>
 

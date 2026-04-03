@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '../../lib/supabase'
+import Nav from '@/components/Nav'
 
 type Produit = {
   id: string
@@ -15,20 +16,6 @@ type Produit = {
   actif: boolean
   created_at: string
 }
-
-const NAV_LINKS = [
-  { label: 'Dashboard', href: '/dashboard' },
-  { label: 'Factures', href: '/factures' },
-  { label: 'Devis', href: '/devis' },
-  { label: 'Catalogue', href: '/produits' },
-  { label: 'CRM', href: '/crm' },
-  { label: 'Frais', href: '/frais' },
-  { label: 'Relances', href: '/relances' },
-  { label: 'Planning', href: '/planning' },
-  { label: 'Rapports', href: '/rapports' },
-  { label: 'Classeur', href: '/classeur' },
-  { label: 'Paramètres', href: '/parametres' },
-]
 
 const TVA_OPTIONS = [0, 5.5, 10, 20]
 const UNITE_OPTIONS = ['unité', 'heure', 'jour', 'mois', 'forfait', 'km']
@@ -146,24 +133,7 @@ export default function ProduitsPage() {
 
   return (
     <div style={{ minHeight: '100vh', background: '#FAF8F4', fontFamily: 'system-ui, sans-serif' }}>
-      {/* Navbar */}
-      <nav style={{ background: '#0B1F45', padding: '0 2rem', height: '64px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'sticky', top: 0, zIndex: 10 }}>
-        <a href="/dashboard" style={{ fontFamily: 'Georgia,serif', fontSize: '20px', fontWeight: '700', color: '#fff', textDecoration: 'none' }}>NovaBiz</a>
-        <div style={{ display: 'flex', gap: '4px', alignItems: 'center', flexWrap: 'wrap' }}>
-          {NAV_LINKS.map(l => (
-            <a key={l.href} href={l.href} style={{
-              padding: '6px 12px', borderRadius: '6px', fontSize: '13px', fontWeight: '500',
-              color: l.href === '/produits' ? '#C8973A' : 'rgba(255,255,255,0.55)',
-              background: l.href === '/produits' ? 'rgba(200,151,58,0.12)' : 'transparent',
-              textDecoration: 'none', transition: 'all 0.15s',
-            }}>{l.label}</a>
-          ))}
-        </div>
-        <button onClick={async () => { await supabase.auth.signOut(); window.location.href = '/login' }}
-          style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)', color: 'rgba(255,255,255,0.7)', borderRadius: '6px', padding: '6px 14px', fontSize: '13px', cursor: 'pointer' }}>
-          Déconnexion
-        </button>
-      </nav>
+      <Nav />
 
       {/* Header */}
       <div style={{ background: '#0B1F45', padding: '24px 32px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>

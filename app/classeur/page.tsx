@@ -3,25 +3,12 @@
 import { useEffect, useState } from 'react'
 import { createClient } from '@supabase/supabase-js'
 import { useRouter } from 'next/navigation'
+import Nav from '@/components/Nav'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 )
-
-const NAV = [
-  { label: 'Dashboard', href: '/dashboard' },
-  { label: 'Factures', href: '/factures' },
-  { label: 'Devis', href: '/devis' },
-  { label: 'Catalogue', href: '/produits' },
-  { label: 'CRM', href: '/crm' },
-  { label: 'Frais', href: '/frais' },
-  { label: 'Relances', href: '/relances' },
-  { label: 'Planning', href: '/planning' },
-  { label: 'Rapports', href: '/rapports' },
-  { label: 'Classeur', href: '/classeur' },
-  { label: 'Paramètres', href: '/parametres' },
-]
 
 type Client = {
   id: string
@@ -180,31 +167,7 @@ export default function ClasseurPage() {
   return (
     <div style={{ minHeight: '100vh', background: '#FAF8F4' }}>
 
-      {/* Nav */}
-      <nav style={{ background: '#0B1F45', padding: '0 2rem', height: '64px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'sticky', top: 0, zIndex: 10 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '32px' }}>
-          <a href="/dashboard" style={{ fontFamily: 'Georgia,serif', fontSize: '20px', fontWeight: '700', color: '#fff', textDecoration: 'none' }}>
-            Nova<span style={{ color: '#C8973A' }}>Biz</span>
-          </a>
-          <div style={{ display: 'flex', gap: '4px' }}>
-            {NAV.map(l => (
-              <a key={l.href} href={l.href} style={{
-                fontSize: '13px', fontWeight: '500',
-                color: l.href === '/classeur' ? '#C8973A' : 'rgba(255,255,255,0.55)',
-                textDecoration: 'none', padding: '6px 12px', borderRadius: '8px',
-                background: l.href === '/classeur' ? 'rgba(200,151,58,0.12)' : 'transparent',
-              }}>{l.label}</a>
-            ))}
-          </div>
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <span style={{ fontSize: '13px', color: 'rgba(255,255,255,0.5)' }}>{user?.email}</span>
-          <button onClick={async () => { await supabase.auth.signOut(); window.location.href = '/login' }}
-            style={{ background: 'transparent', border: '1px solid rgba(255,255,255,0.2)', color: 'rgba(255,255,255,0.7)', padding: '6px 14px', borderRadius: '8px', fontSize: '12px', cursor: 'pointer' }}>
-            Déconnexion
-          </button>
-        </div>
-      </nav>
+      <Nav />
 
       {/* Header */}
       <div style={{ background: '#fff', borderBottom: '1px solid rgba(11,31,69,0.08)', padding: '24px 32px' }}>
