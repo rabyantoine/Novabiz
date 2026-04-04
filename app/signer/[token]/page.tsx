@@ -78,12 +78,12 @@ export default function SignerPage({
 
   // --- Canvas drawing ---
 
-  function getPos(canvas: HTMLCanvasElement, e: MouseEvent | Touch): { x: number; y: number } {
-    const rect = canvas.getBoundingClientRect()
-    const scaleX = canvas.width / rect.width
-    const scaleY = canvas.height / rect.height
-    const clientX = 'clientX' in e ? e.clientX : e.clientX
-    const clientY = 'clientY' in e ? e.clientY : e.clientY
+  const getPos = (e: MouseEvent | TouchEvent) => {
+    const rect = (e.currentTarget as HTMLCanvasElement).getBoundingClientRect()
+    const scaleX = (e.currentTarget as HTMLCanvasElement).width / rect.width
+    const scaleY = (e.currentTarget as HTMLCanvasElement).height / rect.height
+    const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX
+    const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY
     return {
       x: (clientX - rect.left) * scaleX,
       y: (clientY - rect.top) * scaleY,
@@ -94,7 +94,7 @@ export default function SignerPage({
     const canvas = canvasRef.current
     if (!canvas) return
     isDrawing.current = true
-    lastPos.current = getPos(canvas, e.nativeEvent)
+    lastPos.current = getPos(e.nativeEvent)
   }, [])
 
   const draw = useCallback((e: React.MouseEvent<HTMLCanvasElement>) => {
@@ -104,7 +104,7 @@ export default function SignerPage({
     const ctx = canvas.getContext('2d')
     if (!ctx || !lastPos.current) return
 
-    const pos = getPos(canvas, e.nativeEvent)
+    const pos = getPos(e.nativeEvent)
     ctx.beginPath()
     ctx.strokeStyle = '#0B1F45'
     ctx.lineWidth = 2
@@ -127,7 +127,7 @@ export default function SignerPage({
     const canvas = canvasRef.current
     if (!canvas) return
     isDrawing.current = true
-    lastPos.current = getPos(canvas, e.touches[0])
+    lastPos.current = getPos(e.nativeEvent)
   }, [])
 
   const drawTouch = useCallback((e: React.TouchEvent<HTMLCanvasElement>) => {
@@ -138,7 +138,7 @@ export default function SignerPage({
     const ctx = canvas.getContext('2d')
     if (!ctx || !lastPos.current) return
 
-    const pos = getPos(canvas, e.touches[0])
+    const pos = getPos(e.nativeEvent)
     ctx.beginPath()
     ctx.strokeStyle = '#0B1F45'
     ctx.lineWidth = 2
