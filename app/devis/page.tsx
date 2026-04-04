@@ -43,6 +43,7 @@ export default function DevisPage() {
   const [form, setForm] = useState(EMPTY_FORM)
   const [saving, setSaving] = useState(false)
   const [converting, setConverting] = useState<string | null>(null)
+  const [signaturesSignees, setSignaturesSignees] = useState<Set<string>>(new Set())
   const [error, setError] = useState('')
   const [toast, setToast] = useState('')
   const [filterStatut, setFilterStatut] = useState('tous')
@@ -61,7 +62,7 @@ export default function DevisPage() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { window.location.href = '/login'; return }
       setUser(user)
-      await Promise.all([loadDevis(user.id), loadClients(user.id)])
+      await Promise.all([loadDevis(user.id), loadClients(user.id), loadSignatures(user.id)])
       setLoading(false)
     }
     init()
@@ -74,6 +75,16 @@ export default function DevisPage() {
       .eq('user_id', userId)
       .order('created_at', { ascending: false })
     setDevisList(data || [])
+  }
+
+  const loadSignatures = async (userId: string) => {
+    const { data } = await supabase
+      .from('signatures')
+      .select('document_id')
+      .eq('user_id', userId)
+      .eq('document_type', 'devis')
+      .eq('statut', 'signe')
+    setSignaturesSignees(new Set((data || []).map((s: { document_id: string }) => s.document_id)))
   }
 
   const loadClients = async (userId: string) => {
@@ -153,6 +164,31 @@ export default function DevisPage() {
   const handleStatutChange = async (id: string, statut: string) => {
     await supabase.from('devis').update({ statut }).eq('id', id)
     setDevisList(l => l.map(d => d.id === id ? { ...d, statut: statut as Devis['statut'] } : d))
+  }
+
+  const envoyerPourSignature = async (devisId: string) => {
+    const { data: { session } } = await supabase.auth.getSession()
+    if (!session) return
+
+    await supabase.from('signatures').insert({
+      document_type: 'devis',
+      document_id: devisId,
+      user_id: session.user.id,
+    })
+
+    const { data } = await supabase
+      .from('signatures')
+      .select('token')
+      .eq('document_id', devisId)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .single()
+
+    if (!data?.token) { showToast('Erreur : token non généré.'); return }
+
+    const lien = `${window.location.origin}/signer/${data.token}`
+    await navigator.clipboard.writeText(lien)
+    showToast('✉️ Lien de signature copié ! Envoyez-le à votre client.')
   }
 
   const handleConvertToFacture = async (d: Devis) => {
@@ -433,7 +469,19 @@ export default function DevisPage() {
                         </select>
                       </td>
                       <td style={{ padding: '14px 18px' }}>
-                        <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                        <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', alignItems: 'center' }}>
+                          {signaturesSignees.has(d.id) && (
+                            <span style={{ background: '#D1FAE5', color: '#059669', borderRadius: '20px', padding: '3px 10px', fontSize: '11px', fontWeight: '700' }}>
+                              ✅ Signé
+                            </span>
+                          )}
+                          <button
+                            onClick={() => envoyerPourSignature(d.id)}
+                            title="Envoyer pour signature"
+                            style={{ background: '#EFF6FF', color: '#1D4ED8', border: 'none', padding: '5px 10px', borderRadius: '8px', fontSize: '12px', cursor: 'pointer' }}
+                          >
+                            ✉️ Signature
+                          </button>
                           {d.statut !== 'refusé' && (
                             <button
                               onClick={() => handleConvertToFacture(d)}

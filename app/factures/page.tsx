@@ -29,6 +29,8 @@ export default function Factures() {
   const [showForm, setShowForm] = useState(false)
   const [dataLoading, setDataLoading] = useState(true)
   const [loading, setLoading] = useState(false)
+  const [signaturesSignees, setSignaturesSignees] = useState<Set<string>>(new Set())
+  const [toast, setToast] = useState('')
   const [error, setError] = useState('')
   const [form, setForm] = useState({
     client_nom: '',
@@ -44,11 +46,51 @@ export default function Factures() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { window.location.href = '/login'; return }
       setUser(user)
-      await fetchFactures(user.id)
+      await Promise.all([fetchFactures(user.id), loadSignatures(user.id)])
       setDataLoading(false)
     }
     init()
   }, [])
+
+  const showToast = (msg: string) => {
+    setToast(msg)
+    setTimeout(() => setToast(''), 3500)
+  }
+
+  const loadSignatures = async (userId: string) => {
+    const { data } = await supabase
+      .from('signatures')
+      .select('document_id')
+      .eq('user_id', userId)
+      .eq('document_type', 'facture')
+      .eq('statut', 'signe')
+    setSignaturesSignees(new Set((data || []).map((s: { document_id: string }) => s.document_id)))
+  }
+
+  const envoyerPourSignature = async (factureId: string) => {
+    const { data: { session } } = await supabase.auth.getSession()
+    if (!session) return
+
+    await supabase.from('signatures').insert({
+      document_type: 'facture',
+      document_id: factureId,
+      user_id: session.user.id,
+    })
+
+    const { data } = await supabase
+      .from('signatures')
+      .select('token')
+      .eq('document_id', factureId)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .single()
+
+    if (!data?.token) { showToast('Erreur : token non généré.'); return }
+
+    const lien = `${window.location.origin}/signer/${data.token}`
+    await navigator.clipboard.writeText(lien)
+    showToast('✉️ Lien de signature copié ! Envoyez-le à votre client.')
+  }
 
   const fetchFactures = async (userId: string) => {
     const { data } = await supabase
@@ -106,6 +148,11 @@ export default function Factures() {
 
   return (
     <div style={{ minHeight: '100vh', background: '#FAF8F4', fontFamily: 'sans-serif' }}>
+      {toast && (
+        <div style={{ position: 'fixed', top: '24px', right: '24px', background: '#0B1F45', color: '#C8973A', padding: '12px 20px', borderRadius: '10px', fontSize: '14px', fontWeight: '600', zIndex: 100, boxShadow: '0 4px 20px rgba(0,0,0,0.2)' }}>
+          {toast}
+        </div>
+      )}
       <Nav />
 
       <div style={{ padding: '40px 2rem', maxWidth: '1100px', margin: '0 auto' }}>
@@ -303,12 +350,25 @@ export default function Factures() {
                       </select>
                     </td>
                     <td style={{ padding: '16px 20px' }}>
-                      <button
-                        onClick={() => handleDelete(f.id)}
-                        style={{ background: 'transparent', border: '1px solid rgba(220,38,38,0.3)', color: '#DC2626', padding: '5px 12px', borderRadius: '8px', fontSize: '12px', cursor: 'pointer' }}
-                      >
-                        Supprimer
-                      </button>
+                      <div style={{ display: 'flex', gap: '6px', alignItems: 'center', flexWrap: 'wrap' }}>
+                        {signaturesSignees.has(f.id) && (
+                          <span style={{ background: '#D1FAE5', color: '#059669', borderRadius: '20px', padding: '3px 10px', fontSize: '11px', fontWeight: '700' }}>
+                            ✅ Signé
+                          </span>
+                        )}
+                        <button
+                          onClick={() => envoyerPourSignature(f.id)}
+                          style={{ background: '#EFF6FF', color: '#1D4ED8', border: 'none', padding: '5px 10px', borderRadius: '8px', fontSize: '12px', cursor: 'pointer' }}
+                        >
+                          ✉️ Signature
+                        </button>
+                        <button
+                          onClick={() => handleDelete(f.id)}
+                          style={{ background: 'transparent', border: '1px solid rgba(220,38,38,0.3)', color: '#DC2626', padding: '5px 12px', borderRadius: '8px', fontSize: '12px', cursor: 'pointer' }}
+                        >
+                          Supprimer
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
