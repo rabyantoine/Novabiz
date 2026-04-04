@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { createClient } from '../../lib/supabase'
+import { supabase } from '../../lib/supabase'
 import Nav from '../../components/Nav'
 
 type Fournisseur = {
@@ -26,7 +26,6 @@ type Fournisseur = {
 const CATEGORIES = ['Informatique', 'Fournitures', 'Services', 'Logistique', 'Marketing', 'Finance', 'Autre']
 
 export default function FournisseursPage() {
-  const supabase = createClient()
   const router = useRouter()
 
   const [fournisseurs, setFournisseurs] = useState<Fournisseur[]>([])
