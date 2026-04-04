@@ -2,10 +2,8 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { createClient } from '../../lib/supabase'
+import { supabase } from '../../lib/supabase'
 import Nav from '../../components/Nav'
-
-const supabase = createClient()
 
 type Achat = {
   id: string
