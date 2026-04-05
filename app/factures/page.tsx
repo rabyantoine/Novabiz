@@ -30,6 +30,7 @@ export default function Factures() {
   const [dataLoading, setDataLoading] = useState(true)
   const [loading, setLoading] = useState(false)
   const [signaturesSignees, setSignaturesSignees] = useState<Set<string>>(new Set())
+  const [paymentLoading, setPaymentLoading] = useState<string | null>(null)
   const [toast, setToast] = useState('')
   const [error, setError] = useState('')
   const [form, setForm] = useState({
@@ -65,6 +66,31 @@ export default function Factures() {
       .eq('document_type', 'facture')
       .eq('statut', 'signe')
     setSignaturesSignees(new Set((data || []).map((s: { document_id: string }) => s.document_id)))
+  }
+
+  const creerLienPaiement = async (facture: Facture) => {
+    const { data: { session } } = await supabase.auth.getSession()
+    if (!session) return
+    setPaymentLoading(facture.id)
+    try {
+      const res = await fetch('/api/create-payment', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          facture_id: facture.id,
+          montant: facture.montant_ttc,
+          user_id: session.user.id,
+          client_nom: facture.client_nom,
+          numero_facture: (facture as any).numero_facture,
+        }),
+      })
+      const { url } = await res.json()
+      window.open(url, '_blank')
+    } catch {
+      alert('Erreur lors de la création du lien de paiement')
+    } finally {
+      setPaymentLoading(null)
+    }
   }
 
   const envoyerPourSignature = async (factureId: string) => {
@@ -361,6 +387,13 @@ export default function Factures() {
                           style={{ background: '#EFF6FF', color: '#1D4ED8', border: 'none', padding: '5px 10px', borderRadius: '8px', fontSize: '12px', cursor: 'pointer' }}
                         >
                           ✉️ Signature
+                        </button>
+                        <button
+                          onClick={() => creerLienPaiement(f)}
+                          disabled={paymentLoading === f.id}
+                          style={{ background: '#C8973A', color: '#fff', border: 'none', padding: '0.3rem 0.8rem', borderRadius: '6px', fontSize: '0.8rem', cursor: paymentLoading === f.id ? 'not-allowed' : 'pointer', opacity: paymentLoading === f.id ? 0.7 : 1 }}
+                        >
+                          {paymentLoading === f.id ? '⏳ Génération...' : '💳 Lien de paiement'}
                         </button>
                         <button
                           onClick={() => handleDelete(f.id)}
