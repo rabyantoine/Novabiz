@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '../../lib/supabase'
 import Nav from '../../components/Nav'
+import IbanInput from '../../components/IbanInput'
+import { validateIban } from '../../lib/validateIban'
 
 type Fournisseur = {
   id: string
@@ -17,6 +19,7 @@ type Fournisseur = {
   pays: string
   siret: string
   tva_intra: string
+  iban: string
   categorie: string
   notes: string
   statut: string
@@ -35,10 +38,11 @@ export default function FournisseursPage() {
   const [showModal, setShowModal] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
+  const [ibanError, setIbanError] = useState('')
   const [form, setForm] = useState({
     nom: '', contact: '', email: '', telephone: '',
     adresse: '', ville: '', code_postal: '', pays: 'France',
-    siret: '', tva_intra: '', categorie: '', notes: '', statut: 'actif'
+    siret: '', tva_intra: '', iban: '', categorie: '', notes: '', statut: 'actif'
   })
 
   useEffect(() => {
@@ -62,6 +66,11 @@ export default function FournisseursPage() {
   }
 
   async function saveFournisseur() {
+    if (form.iban && !validateIban(form.iban).valid) {
+      setIbanError('IBAN invalide')
+      setTimeout(() => setIbanError(''), 3000)
+      return
+    }
     setSaving(true)
     const { data: { session } } = await supabase.auth.getSession()
     if (!session) return
@@ -89,7 +98,7 @@ export default function FournisseursPage() {
       nom: f.nom || '', contact: f.contact || '', email: f.email || '',
       telephone: f.telephone || '', adresse: f.adresse || '', ville: f.ville || '',
       code_postal: f.code_postal || '', pays: f.pays || 'France',
-      siret: f.siret || '', tva_intra: f.tva_intra || '',
+      siret: f.siret || '', tva_intra: f.tva_intra || '', iban: (f as any).iban || '',
       categorie: f.categorie || '', notes: f.notes || '', statut: f.statut || 'actif'
     })
     setShowModal(true)
@@ -100,7 +109,7 @@ export default function FournisseursPage() {
     setForm({
       nom: '', contact: '', email: '', telephone: '',
       adresse: '', ville: '', code_postal: '', pays: 'France',
-      siret: '', tva_intra: '', categorie: '', notes: '', statut: 'actif'
+      siret: '', tva_intra: '', iban: '', categorie: '', notes: '', statut: 'actif'
     })
   }
 
@@ -208,6 +217,12 @@ export default function FournisseursPage() {
         </div>
       </div>
 
+      {ibanError && (
+        <div style={{ position: 'fixed', bottom: 28, right: 28, background: '#dc2626', color: '#fff', padding: '12px 20px', borderRadius: 10, fontSize: 14, zIndex: 9999 }}>
+          ❌ {ibanError}
+        </div>
+      )}
+
       {/* Modal */}
       {showModal && (
         <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
@@ -237,6 +252,14 @@ export default function FournisseursPage() {
                   />
                 </div>
               ))}
+
+              <div style={{ gridColumn: '1 / -1' }}>
+                <IbanInput
+                  label="IBAN"
+                  value={form.iban}
+                  onChange={val => setForm(f => ({ ...f, iban: val }))}
+                />
+              </div>
 
               <div>
                 <label style={{ display: 'block', fontSize: 12, color: '#666', marginBottom: 4 }}>Catégorie</label>

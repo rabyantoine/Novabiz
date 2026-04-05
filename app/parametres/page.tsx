@@ -2,10 +2,13 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../../lib/supabase'
 import Nav from '@/components/Nav'
+import IbanInput from '../../components/IbanInput'
+import { validateIban } from '../../lib/validateIban'
 
 const EMPTY_FORM = {
   nom_entreprise: '',
   siret: '',
+  iban: '',
   adresse: '',
   ville: '',
   code_postal: '',
@@ -52,6 +55,7 @@ export default function Parametres() {
       setForm({
         nom_entreprise: data.nom_entreprise || '',
         siret: data.siret || '',
+        iban: data.iban || '',
         adresse: data.adresse || '',
         ville: data.ville || '',
         code_postal: data.code_postal || '',
@@ -70,11 +74,16 @@ export default function Parametres() {
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (form.iban && !validateIban(form.iban).valid) {
+      showToast('❌ IBAN invalide')
+      return
+    }
     setSaving(true)
     const { error } = await supabase.from('profil').upsert({
       user_id: user.id,
       nom_entreprise: form.nom_entreprise,
       siret: form.siret,
+      iban: form.iban,
       adresse: form.adresse,
       ville: form.ville,
       code_postal: form.code_postal,
@@ -163,6 +172,15 @@ export default function Parametres() {
                   value={form.siret}
                   onChange={e => setForm(f => ({ ...f, siret: e.target.value }))}
                   style={inp}
+                />
+              </div>
+
+              {/* IBAN */}
+              <div style={{ gridColumn: '1/-1' }}>
+                <IbanInput
+                  label="IBAN"
+                  value={form.iban}
+                  onChange={val => setForm(f => ({ ...f, iban: val }))}
                 />
               </div>
 
