@@ -146,7 +146,7 @@ export async function POST(req: NextRequest) {
     // Embarquer le XML en tant qu'EmbeddedFile (PDF/A-3)
     const finalPdf = await embedXmlInPdf(pdfBytes, xmlBytes, 'factur-x.xml')
 
-    return new NextResponse(finalPdf, {
+    return new NextResponse(Buffer.from(finalPdf), {
       status: 200,
       headers: {
         'Content-Type': 'application/pdf',
