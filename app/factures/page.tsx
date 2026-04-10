@@ -162,6 +162,33 @@ export default function Factures() {
     setFactures(f => f.filter(x => x.id !== id))
   }
 
+  const downloadFacturX = async (factureId: string) => {
+    const { data: { session } } = await supabase.auth.getSession()
+    if (!session) return
+
+    const res = await fetch('/api/facturx/generate', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${session.access_token}`,
+      },
+      body: JSON.stringify({ factureId }),
+    })
+
+    if (!res.ok) {
+      alert('Erreur lors de la génération Factur-X')
+      return
+    }
+
+    const blob = await res.blob()
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `facture-facturx.pdf`
+    a.click()
+    URL.revokeObjectURL(url)
+  }
+
   const handleLogout = async () => {
     await supabase.auth.signOut()
     window.location.href = '/login'
@@ -394,6 +421,13 @@ export default function Factures() {
                           style={{ background: '#C8973A', color: '#fff', border: 'none', padding: '0.3rem 0.8rem', borderRadius: '6px', fontSize: '0.8rem', cursor: paymentLoading === f.id ? 'not-allowed' : 'pointer', opacity: paymentLoading === f.id ? 0.7 : 1 }}
                         >
                           {paymentLoading === f.id ? '⏳ Génération...' : '💳 Lien de paiement'}
+                        </button>
+                        <button
+                          onClick={() => downloadFacturX(f.id)}
+                          className="text-xs px-2 py-1 rounded border border-[#C8973A] text-[#C8973A] hover:bg-[#C8973A] hover:text-white transition-colors"
+                          title="Télécharger Factur-X (PDF/A-3 + XML EN 16931)"
+                        >
+                          📎 Factur-X
                         </button>
                         <button
                           onClick={() => handleDelete(f.id)}
