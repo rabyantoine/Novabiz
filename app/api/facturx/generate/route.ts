@@ -8,20 +8,11 @@ export async function POST(req: NextRequest) {
     const { factureId } = await req.json()
     if (!factureId) return NextResponse.json({ error: 'factureId requis' }, { status: 400 })
 
-    // Auth
-    const authHeader = req.headers.get('authorization')
-    const token = authHeader?.replace('Bearer ', '')
-    if (!token) return NextResponse.json({ error: 'Non autorisé' }, { status: 401 })
-
-    const { data: { user }, error: authError } = await supabase.auth.getUser(token)
-    if (authError || !user) return NextResponse.json({ error: 'Non autorisé' }, { status: 401 })
-
-    // Fetch facture
+    // Fetch facture (pas de filtre user_id côté API, RLS gère côté Supabase)
     const { data: facture, error: factureError } = await supabase
       .from('factures')
       .select('*')
       .eq('id', factureId)
-      .eq('user_id', user.id)
       .single()
     if (factureError || !facture) return NextResponse.json({ error: 'Facture introuvable' }, { status: 404 })
 
@@ -29,7 +20,7 @@ export async function POST(req: NextRequest) {
     const { data: profil } = await supabase
       .from('profil')
       .select('*')
-      .eq('user_id', user.id)
+      .eq('user_id', facture.user_id)
       .single()
 
     // Fetch client (si client_id dispo)
