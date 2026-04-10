@@ -1,154 +1,174 @@
 'use client'
 import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { supabase } from '../../lib/supabase'
 import {
   Chart as ChartJS,
   CategoryScale,
   LinearScale,
+  BarElement,
   PointElement,
   LineElement,
   Tooltip,
   Legend,
   Filler,
 } from 'chart.js'
-import { Line } from 'react-chartjs-2'
+import { Bar } from 'react-chartjs-2'
 import Nav from '@/components/Nav'
 
-ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Tooltip, Legend, Filler)
-
-type KPIs = {
-  caMois: number
-  tvaMois: number
-  impayes: number
-  chargesMois: number
-  margeNette: number
-  nbFacturesMois: number
-  nbImpayes: number
-  nbClients: number
-}
-
-type ChartMonth = { label: string; ca: number }
+ChartJS.register(CategoryScale, LinearScale, BarElement, PointElement, LineElement, Tooltip, Legend, Filler)
 
 const fmt = (n: number) =>
   new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(n)
 
-function KpiCard({ label, value, sub, accent }: { label: string; value: string; sub: string; accent?: boolean }) {
+const fmtDate = (d: string) =>
+  new Date(d).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })
+
+function KpiCard({ label, value, sub, accent, trend }: {
+  label: string
+  value: string
+  sub: string
+  accent?: boolean
+  trend?: number | null
+}) {
   return (
     <div style={{
       background: accent ? '#0B1F45' : '#fff',
-      border: `1px solid ${accent ? 'transparent' : 'rgba(11,31,69,0.1)'}`,
+      border: `1px solid ${accent ? 'transparent' : 'rgba(11,31,69,0.08)'}`,
       borderRadius: '16px',
-      padding: '24px',
+      padding: '22px',
       display: 'flex',
       flexDirection: 'column',
       gap: '6px',
     }}>
-      <div style={{ fontSize: '12px', fontWeight: '600', color: accent ? 'rgba(255,255,255,0.55)' : '#8A92A3', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{label}</div>
-      <div style={{ fontFamily: 'Georgia,serif', fontSize: '30px', fontWeight: '800', color: accent ? '#C8973A' : '#0B1F45', lineHeight: 1.1 }}>{value}</div>
-      <div style={{ fontSize: '12px', color: accent ? 'rgba(255,255,255,0.45)' : '#8A92A3' }}>{sub}</div>
+      <div style={{ fontSize: '11px', fontWeight: '600', color: accent ? 'rgba(255,255,255,0.5)' : '#8A92A3', textTransform: 'uppercase', letterSpacing: '0.07em' }}>
+        {label}
+      </div>
+      <div style={{ fontFamily: 'Georgia,serif', fontSize: '28px', fontWeight: '800', color: accent ? '#C8973A' : '#0B1F45', lineHeight: 1.1 }}>
+        {value}
+      </div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+        <span style={{ fontSize: '12px', color: accent ? 'rgba(255,255,255,0.4)' : '#8A92A3' }}>{sub}</span>
+        {trend !== null && trend !== undefined && (
+          <span style={{ fontSize: '11px', fontWeight: '700', color: trend >= 0 ? '#059669' : '#DC2626' }}>
+            {trend >= 0 ? '▲' : '▼'} {Math.abs(trend).toFixed(0)}%
+          </span>
+        )}
+      </div>
+    </div>
+  )
+}
+
+function Alert({ type, msg }: { type: 'danger' | 'warn' | 'info'; msg: string }) {
+  const styles = {
+    danger: { bg: '#FEF2F2', border: '#FCA5A5', text: '#B91C1C', icon: '🔴' },
+    warn:   { bg: '#FFFBEB', border: '#FCD34D', text: '#92400E', icon: '⚠️' },
+    info:   { bg: '#EFF6FF', border: '#93C5FD', text: '#1E40AF', icon: 'ℹ️' },
+  }
+  const s = styles[type]
+  return (
+    <div style={{ background: s.bg, border: `1px solid ${s.border}`, borderRadius: '10px', padding: '10px 14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+      <span>{s.icon}</span>
+      <span style={{ fontSize: '13px', color: s.text, fontWeight: '500' }}>{msg}</span>
     </div>
   )
 }
 
 export default function Dashboard() {
-  const [user, setUser] = useState<any>(null)
-  const [kpis, setKpis] = useState<KPIs | null>(null)
-  const [chartData, setChartData] = useState<ChartMonth[]>([])
+  const router = useRouter()
   const [loading, setLoading] = useState(true)
+  const [kpis, setKpis] = useState({
+    caMois: 0, caAvant: 0, tvaMois: 0,
+    impayes: 0, nbImpayes: 0,
+    nbClients: 0, chargesMois: 0, nbFacturesMois: 0,
+  })
+  const [chart, setChart] = useState<{ label: string; ca: number; charges: number }[]>([])
+  const [topClients, setTopClients] = useState<{ nom: string; total: number }[]>([])
+  const [echeances, setEcheances] = useState<{ client_nom: string; montant_ttc: number; date_echeance: string }[]>([])
+  const [alerts, setAlerts] = useState<{ type: 'danger' | 'warn' | 'info'; msg: string }[]>([])
 
   useEffect(() => {
     const init = async () => {
       const { data: { user } } = await supabase.auth.getUser()
-      if (!user) { window.location.href = '/login'; return }
-      setUser(user)
-      await loadData(user.id)
+      if (!user) { router.push('/login'); return }
+      await load(user.id)
       setLoading(false)
     }
     init()
   }, [])
 
-  const loadData = async (userId: string) => {
+  const load = async (uid: string) => {
     const now = new Date()
-    const firstOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0]
-    // 12 months window
-    const twelveMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 11, 1).toISOString().split('T')[0]
+    const y = now.getFullYear(), mo = now.getMonth()
+    const firstMois  = new Date(y, mo, 1).toISOString().split('T')[0]
+    const firstAvant = new Date(y, mo - 1, 1).toISOString().split('T')[0]
+    const endAvant   = new Date(y, mo, 0).toISOString().split('T')[0]
+    const debut12    = new Date(y, mo - 11, 1).toISOString().split('T')[0]
+    const today      = now.toISOString().split('T')[0]
+    const in30       = new Date(now.getTime() + 30 * 86400000).toISOString().split('T')[0]
 
     const [
-      { data: facturesMois },
-      { data: facturesImpayes },
-      { data: chargesData },
-      { data: clientsData },
-      { data: factures12m },
+      { data: fMois },
+      { data: fAvant },
+      { data: fImp },
+      { data: fraisMois },
+      { data: clients },
+      { data: f12m },
+      { data: frais12m },
+      { data: ech },
     ] = await Promise.all([
-      supabase
-        .from('factures')
-        .select('montant_ht, tva_montant, montant_ttc, statut')
-        .eq('user_id', userId)
-        .gte('date_emission', firstOfMonth),
-      supabase
-        .from('factures')
-        .select('montant_ttc, date_echeance')
-        .eq('user_id', userId)
-        .eq('statut', 'envoyée'),
-      supabase
-        .from('charges')
-        .select('montant')
-        .eq('user_id', userId)
-        .gte('date_charge', firstOfMonth),
-      supabase
-        .from('clients')
-        .select('id', { count: 'exact' })
-        .eq('user_id', userId),
-      supabase
-        .from('factures')
-        .select('montant_ht, date_emission')
-        .eq('user_id', userId)
-        .gte('date_emission', twelveMonthsAgo),
+      supabase.from('factures').select('montant_ht,tva_montant,statut').eq('user_id', uid).gte('date_emission', firstMois),
+      supabase.from('factures').select('montant_ht').eq('user_id', uid).gte('date_emission', firstAvant).lte('date_emission', endAvant),
+      supabase.from('factures').select('montant_ttc,date_echeance').eq('user_id', uid).eq('statut', 'envoyée'),
+      supabase.from('frais').select('montant').eq('user_id', uid).gte('date', firstMois),
+      supabase.from('clients').select('id').eq('user_id', uid),
+      supabase.from('factures').select('montant_ht,date_emission,client_nom').eq('user_id', uid).gte('date_emission', debut12),
+      supabase.from('frais').select('montant,date').eq('user_id', uid).gte('date', debut12),
+      supabase.from('factures').select('client_nom,montant_ttc,date_echeance').eq('user_id', uid).eq('statut', 'envoyée').gte('date_echeance', today).lte('date_echeance', in30).order('date_echeance'),
     ])
 
-    const caMois = (facturesMois || []).reduce((s, f) => s + (Number(f.montant_ht) || 0), 0)
-    const tvaMois = (facturesMois || []).reduce((s, f) => s + (Number(f.tva_montant) || 0), 0)
-    const impayes = (facturesImpayes || []).reduce((s, f) => s + (Number(f.montant_ttc) || 0), 0)
-    const nbImpayes = (facturesImpayes || []).length
-    const chargesMois = (chargesData || []).reduce((s, c) => s + (Number(c.montant) || 0), 0)
-    const margeNette = caMois - chargesMois
+    const caMois     = (fMois || []).reduce((s, f) => s + Number(f.montant_ht || 0), 0)
+    const caAvant    = (fAvant || []).reduce((s, f) => s + Number(f.montant_ht || 0), 0)
+    const tvaMois    = (fMois || []).reduce((s, f) => s + Number(f.tva_montant || 0), 0)
+    const impayes    = (fImp || []).reduce((s, f) => s + Number(f.montant_ttc || 0), 0)
+    const chargesMois = (fraisMois || []).reduce((s, f) => s + Number(f.montant || 0), 0)
 
-    setKpis({
-      caMois,
-      tvaMois,
-      impayes,
-      chargesMois,
-      margeNette,
-      nbFacturesMois: (facturesMois || []).length,
-      nbImpayes,
-      nbClients: clientsData?.length ?? 0,
-    })
+    setKpis({ caMois, caAvant, tvaMois, impayes, nbImpayes: (fImp || []).length, nbClients: (clients || []).length, chargesMois, nbFacturesMois: (fMois || []).length })
+    setEcheances((ech || []).slice(0, 5))
 
-    // Build 12-month chart
-    const months: ChartMonth[] = []
-    for (let i = 11; i >= 0; i--) {
-      const d = new Date(now.getFullYear(), now.getMonth() - i, 1)
+    // Graphique 12 mois
+    const months = Array.from({ length: 12 }, (_, i) => {
+      const d = new Date(y, mo - 11 + i, 1)
       const label = d.toLocaleDateString('fr-FR', { month: 'short', year: '2-digit' })
-      const y = d.getFullYear()
-      const m = d.getMonth()
-      const ca = (factures12m || [])
-        .filter(f => {
-          if (!f.date_emission) return false
-          const fd = new Date(f.date_emission)
-          return fd.getFullYear() === y && fd.getMonth() === m
-        })
-        .reduce((s, f) => s + (Number(f.montant_ht) || 0), 0)
-      months.push({ label, ca })
-    }
-    setChartData(months)
+      const my = d.getFullYear(), mm = d.getMonth()
+      const ca = (f12m || [])
+        .filter(f => { const fd = new Date(f.date_emission); return fd.getFullYear() === my && fd.getMonth() === mm })
+        .reduce((s, f) => s + Number(f.montant_ht || 0), 0)
+      const charges = (frais12m || [])
+        .filter(f => { const fd = new Date(f.date); return fd.getFullYear() === my && fd.getMonth() === mm })
+        .reduce((s, f) => s + Number(f.montant || 0), 0)
+      return { label, ca, charges }
+    })
+    setChart(months)
+
+    // Top clients
+    const clientMap: Record<string, number> = {}
+    ;(f12m || []).forEach(f => {
+      const k = f.client_nom || 'Inconnu'
+      clientMap[k] = (clientMap[k] || 0) + Number(f.montant_ht || 0)
+    })
+    setTopClients(Object.entries(clientMap).sort((a, b) => b[1] - a[1]).slice(0, 5).map(([nom, total]) => ({ nom, total })))
+
+    // Alertes
+    const al: { type: 'danger' | 'warn' | 'info'; msg: string }[] = []
+    const retards = (fImp || []).filter(f => f.date_echeance && f.date_echeance < today)
+    if (retards.length > 0) al.push({ type: 'danger', msg: `${retards.length} facture${retards.length > 1 ? 's' : ''} en retard de paiement` })
+    if (tvaMois > 0) al.push({ type: 'warn', msg: `TVA à reverser ce mois : ${fmt(tvaMois)}` })
+    if ((fImp || []).length > 0) al.push({ type: 'info', msg: `${(fImp || []).length} facture${(fImp || []).length > 1 ? 's' : ''} en attente de paiement (${fmt(impayes)})` })
+    setAlerts(al)
   }
 
-  const handleLogout = async () => {
-    await supabase.auth.signOut()
-    window.location.href = '/login'
-  }
-
-  if (!user || loading) {
+  if (loading) {
     return (
       <div style={{ background: '#0B1F45', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <div style={{ width: '32px', height: '32px', border: '3px solid rgba(200,151,58,0.3)', borderTopColor: '#C8973A', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
@@ -157,168 +177,211 @@ export default function Dashboard() {
     )
   }
 
-  const chartJsData = {
-    labels: chartData.map(m => m.label),
-    datasets: [{
-      label: 'CA HT (€)',
-      data: chartData.map(m => m.ca),
-      fill: true,
-      borderColor: '#C8973A',
-      backgroundColor: 'rgba(200,151,58,0.12)',
-      pointBackgroundColor: '#C8973A',
-      pointBorderColor: '#fff',
-      pointBorderWidth: 2,
-      pointRadius: 5,
-      pointHoverRadius: 7,
-      tension: 0.4,
-      borderWidth: 2.5,
-    }],
+  const trend = kpis.caAvant > 0 ? ((kpis.caMois - kpis.caAvant) / kpis.caAvant) * 100 : null
+  const totalCA12m = chart.reduce((s, m) => s + m.ca, 0)
+  const maxClient = topClients[0]?.total || 1
+
+  const chartData = {
+    labels: chart.map(m => m.label),
+    datasets: [
+      {
+        label: 'CA HT',
+        data: chart.map(m => m.ca),
+        backgroundColor: 'rgba(11,31,69,0.85)',
+        borderRadius: 6,
+        borderSkipped: false,
+      },
+      {
+        label: 'Dépenses',
+        data: chart.map(m => m.charges),
+        backgroundColor: 'rgba(200,151,58,0.75)',
+        borderRadius: 6,
+        borderSkipped: false,
+      },
+    ],
   }
 
   const chartOptions = {
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
-      legend: { display: false },
+      legend: {
+        display: true,
+        position: 'top' as const,
+        labels: { color: '#8A92A3', font: { size: 11 }, boxWidth: 12, padding: 16 },
+      },
       tooltip: {
         backgroundColor: '#0B1F45',
         titleColor: 'rgba(255,255,255,0.6)',
         bodyColor: '#C8973A',
-        bodyFont: { family: 'Georgia, serif', size: 16, weight: 'bold' as const },
         padding: 12,
-        callbacks: {
-          label: (ctx: any) => ` ${fmt(ctx.parsed.y)}`,
-        },
+        callbacks: { label: (ctx: any) => ` ${fmt(ctx.parsed.y)}` },
       },
     },
     scales: {
-      x: {
-        grid: { display: false },
-        ticks: { color: '#8A92A3', font: { size: 11 } },
-        border: { display: false },
-      },
+      x: { grid: { display: false }, ticks: { color: '#8A92A3', font: { size: 11 } }, border: { display: false } },
       y: {
         grid: { color: 'rgba(11,31,69,0.06)' },
-        ticks: {
-          color: '#8A92A3',
-          font: { size: 11 },
-          callback: (v: any) => `${(v / 1000).toFixed(0)}k€`,
-        },
+        ticks: { color: '#8A92A3', font: { size: 11 }, callback: (v: any) => `${(v / 1000).toFixed(0)}k€` },
         border: { display: false },
       },
     },
   }
 
-  const totalCA12m = chartData.reduce((s, m) => s + m.ca, 0)
-  const prevMonth = chartData[10]?.ca ?? 0
-  const curMonth = chartData[11]?.ca ?? 0
-  const evol = prevMonth > 0 ? ((curMonth - prevMonth) / prevMonth) * 100 : null
-
   return (
     <div style={{ minHeight: '100vh', background: '#FAF8F4', fontFamily: 'sans-serif' }}>
       <Nav />
-
       <div style={{ padding: '36px 2rem', maxWidth: '1200px', margin: '0 auto' }}>
+
         {/* Header */}
-        <div style={{ marginBottom: '28px' }}>
-          <h1 style={{ fontFamily: 'Georgia,serif', fontSize: '26px', fontWeight: '800', color: '#0B1F45', margin: '0 0 4px' }}>
-            Tableau de bord
-          </h1>
-          <p style={{ fontSize: '13px', color: '#8A92A3', margin: 0 }}>
-            {new Date().toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
-          </p>
+        <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginBottom: '28px', flexWrap: 'wrap', gap: '12px' }}>
+          <div>
+            <h1 style={{ fontFamily: 'Georgia,serif', fontSize: '26px', fontWeight: '800', color: '#0B1F45', margin: '0 0 4px' }}>
+              Tableau de bord
+            </h1>
+            <p style={{ fontSize: '13px', color: '#8A92A3', margin: 0 }}>
+              {new Date().toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+            </p>
+          </div>
+          {/* Raccourcis rapides */}
+          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+            {[
+              { label: '+ Facture', href: '/factures' },
+              { label: '+ Devis', href: '/devis' },
+              { label: '+ Client', href: '/crm' },
+              { label: '+ Dépense', href: '/frais' },
+            ].map(b => (
+              <a key={b.href} href={b.href} style={{
+                background: '#0B1F45', color: '#C8973A', border: 'none',
+                borderRadius: '10px', padding: '8px 16px', fontSize: '13px',
+                fontWeight: '600', cursor: 'pointer', textDecoration: 'none',
+                transition: 'opacity 0.15s',
+              }}
+                onMouseEnter={e => (e.currentTarget.style.opacity = '0.85')}
+                onMouseLeave={e => (e.currentTarget.style.opacity = '1')}
+              >
+                {b.label}
+              </a>
+            ))}
+          </div>
         </div>
+
+        {/* Alertes */}
+        {alerts.length > 0 && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '24px' }}>
+            {alerts.map((a, i) => <Alert key={i} type={a.type} msg={a.msg} />)}
+          </div>
+        )}
 
         {/* KPIs */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: '16px', marginBottom: '24px' }}>
-          <KpiCard
-            label="CA du mois HT"
-            value={fmt(kpis!.caMois)}
-            sub={`${kpis!.nbFacturesMois} facture${kpis!.nbFacturesMois !== 1 ? 's' : ''} ce mois`}
-            accent
-          />
-          <KpiCard
-            label="TVA collectée"
-            value={fmt(kpis!.tvaMois)}
-            sub="À reverser sur CA du mois"
-          />
-          <KpiCard
-            label="Impayés"
-            value={fmt(kpis!.impayes)}
-            sub={`${kpis!.nbImpayes} facture${kpis!.nbImpayes !== 1 ? 's' : ''} en attente`}
-          />
-          <KpiCard
-            label="Marge nette"
-            value={fmt(kpis!.margeNette)}
-            sub={`Charges : ${fmt(kpis!.chargesMois)}`}
-          />
+          <KpiCard label="CA du mois HT" value={fmt(kpis.caMois)} sub={`${kpis.nbFacturesMois} facture${kpis.nbFacturesMois !== 1 ? 's' : ''} ce mois`} accent trend={trend} />
+          <KpiCard label="TVA collectée" value={fmt(kpis.tvaMois)} sub="À reverser sur CA du mois" />
+          <KpiCard label="Impayés" value={fmt(kpis.impayes)} sub={`${kpis.nbImpayes} facture${kpis.nbImpayes !== 1 ? 's' : ''} en attente`} />
+          <KpiCard label="Dépenses du mois" value={fmt(kpis.chargesMois)} sub={`Marge nette : ${fmt(kpis.caMois - kpis.chargesMois)}`} />
         </div>
 
-        {/* Chart */}
-        <div style={{ background: '#fff', border: '1px solid rgba(11,31,69,0.1)', borderRadius: '20px', padding: '28px', marginBottom: '24px' }}>
-          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '24px' }}>
-            <div>
-              <h2 style={{ fontFamily: 'Georgia,serif', fontSize: '17px', fontWeight: '700', color: '#0B1F45', margin: '0 0 4px' }}>
-                Évolution du CA sur 12 mois
-              </h2>
-              <p style={{ fontSize: '12px', color: '#8A92A3', margin: 0 }}>Chiffre d'affaires HT mensuel</p>
-            </div>
-            <div style={{ textAlign: 'right' }}>
-              <div style={{ fontFamily: 'Georgia,serif', fontSize: '20px', fontWeight: '800', color: '#0B1F45' }}>{fmt(totalCA12m)}</div>
-              <div style={{ fontSize: '12px', color: '#8A92A3' }}>
-                Total 12 mois
-                {evol !== null && (
-                  <span style={{ marginLeft: '8px', color: evol >= 0 ? '#059669' : '#DC2626', fontWeight: '600' }}>
-                    {evol >= 0 ? '▲' : '▼'} {Math.abs(evol).toFixed(0)}% vs mois préc.
-                  </span>
-                )}
+        {/* Graphique + Top clients */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: '16px', marginBottom: '24px' }}>
+
+          {/* Graphique CA vs Dépenses */}
+          <div style={{ background: '#fff', border: '1px solid rgba(11,31,69,0.08)', borderRadius: '20px', padding: '24px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '20px' }}>
+              <div>
+                <h2 style={{ fontFamily: 'Georgia,serif', fontSize: '16px', fontWeight: '700', color: '#0B1F45', margin: '0 0 3px' }}>
+                  CA vs Dépenses — 12 mois
+                </h2>
+                <p style={{ fontSize: '12px', color: '#8A92A3', margin: 0 }}>Chiffre d'affaires HT et frais mensuels</p>
+              </div>
+              <div style={{ textAlign: 'right' }}>
+                <div style={{ fontFamily: 'Georgia,serif', fontSize: '18px', fontWeight: '800', color: '#0B1F45' }}>{fmt(totalCA12m)}</div>
+                <div style={{ fontSize: '11px', color: '#8A92A3' }}>CA total 12 mois</div>
               </div>
             </div>
+            <div style={{ height: '260px' }}>
+              <Bar data={chartData} options={chartOptions} />
+            </div>
           </div>
-          <div style={{ height: '280px' }}>
-            <Line data={chartJsData} options={chartOptions} />
+
+          {/* Top 5 clients */}
+          <div style={{ background: '#fff', border: '1px solid rgba(11,31,69,0.08)', borderRadius: '20px', padding: '24px' }}>
+            <h2 style={{ fontFamily: 'Georgia,serif', fontSize: '16px', fontWeight: '700', color: '#0B1F45', margin: '0 0 16px' }}>
+              Top clients — 12 mois
+            </h2>
+            {topClients.length === 0 ? (
+              <p style={{ fontSize: '13px', color: '#8A92A3' }}>Aucune donnée</p>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                {topClients.map((c, i) => (
+                  <div key={i}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px' }}>
+                      <span style={{ fontSize: '13px', fontWeight: '600', color: '#0B1F45', maxWidth: '180px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.nom}</span>
+                      <span style={{ fontSize: '13px', fontWeight: '700', color: '#C8973A' }}>{fmt(c.total)}</span>
+                    </div>
+                    <div style={{ height: '5px', background: 'rgba(11,31,69,0.06)', borderRadius: '10px', overflow: 'hidden' }}>
+                      <div style={{ height: '100%', width: `${(c.total / maxClient) * 100}%`, background: i === 0 ? '#0B1F45' : '#C8973A', borderRadius: '10px', opacity: 1 - i * 0.12 }} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
 
-        {/* Bottom row */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px' }}>
-          {[
-            {
-              icon: '🧾',
-              title: 'Factures ce mois',
-              value: `${kpis!.nbFacturesMois}`,
-              link: '/factures',
-              linkLabel: 'Voir les factures →',
-            },
-            {
-              icon: '⚠️',
-              title: 'Factures impayées',
-              value: `${kpis!.nbImpayes}`,
-              link: '/factures',
-              linkLabel: 'Gérer les relances →',
-            },
-            {
-              icon: '👥',
-              title: 'Clients actifs',
-              value: `${kpis!.nbClients}`,
-              link: '#',
-              linkLabel: 'Voir les clients →',
-            },
-            {
-              icon: '💰',
-              title: 'Charges du mois',
-              value: fmt(kpis!.chargesMois),
-              link: '#',
-              linkLabel: 'Voir les charges →',
-            },
-          ].map((item, i) => (
-            <div key={i} style={{ background: '#fff', border: '1px solid rgba(11,31,69,0.1)', borderRadius: '16px', padding: '20px' }}>
-              <div style={{ fontSize: '22px', marginBottom: '8px' }}>{item.icon}</div>
-              <div style={{ fontSize: '12px', color: '#8A92A3', marginBottom: '4px' }}>{item.title}</div>
-              <div style={{ fontFamily: 'Georgia,serif', fontSize: '22px', fontWeight: '800', color: '#0B1F45', marginBottom: '10px' }}>{item.value}</div>
-              <a href={item.link} style={{ fontSize: '12px', color: '#C8973A', fontWeight: '600', textDecoration: 'none' }}>{item.linkLabel}</a>
-            </div>
-          ))}
+        {/* Échéances + Stats rapides */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+
+          {/* Prochaines échéances */}
+          <div style={{ background: '#fff', border: '1px solid rgba(11,31,69,0.08)', borderRadius: '20px', padding: '24px' }}>
+            <h2 style={{ fontFamily: 'Georgia,serif', fontSize: '16px', fontWeight: '700', color: '#0B1F45', margin: '0 0 16px' }}>
+              Échéances à venir (30j)
+            </h2>
+            {echeances.length === 0 ? (
+              <p style={{ fontSize: '13px', color: '#8A92A3' }}>Aucune échéance dans les 30 prochains jours 🎉</p>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                {echeances.map((e, i) => {
+                  const daysLeft = Math.ceil((new Date(e.date_echeance).getTime() - Date.now()) / 86400000)
+                  const urgent = daysLeft <= 7
+                  return (
+                    <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 14px', background: urgent ? '#FEF2F2' : '#F8F9FC', borderRadius: '10px', border: `1px solid ${urgent ? '#FCA5A5' : 'rgba(11,31,69,0.06)'}` }}>
+                      <div>
+                        <div style={{ fontSize: '13px', fontWeight: '600', color: '#0B1F45' }}>{e.client_nom}</div>
+                        <div style={{ fontSize: '11px', color: urgent ? '#DC2626' : '#8A92A3' }}>
+                          {fmtDate(e.date_echeance)} · dans {daysLeft}j
+                        </div>
+                      </div>
+                      <div style={{ fontFamily: 'Georgia,serif', fontSize: '14px', fontWeight: '700', color: urgent ? '#DC2626' : '#0B1F45' }}>
+                        {fmt(Number(e.montant_ttc))}
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+          </div>
+
+          {/* Stats rapides */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', alignContent: 'start' }}>
+            {[
+              { icon: '🧾', title: 'Factures ce mois', value: `${kpis.nbFacturesMois}`, href: '/factures' },
+              { icon: '⚠️', title: 'Impayées', value: `${kpis.nbImpayes}`, href: '/relances' },
+              { icon: '👥', title: 'Clients', value: `${kpis.nbClients}`, href: '/crm' },
+              { icon: '📊', title: 'Rapports', value: 'Voir', href: '/rapports' },
+            ].map((item, i) => (
+              <a key={i} href={item.href} style={{ textDecoration: 'none' }}>
+                <div style={{ background: '#fff', border: '1px solid rgba(11,31,69,0.08)', borderRadius: '16px', padding: '18px', cursor: 'pointer', transition: 'border-color 0.15s' }}
+                  onMouseEnter={e => (e.currentTarget.style.borderColor = '#C8973A')}
+                  onMouseLeave={e => (e.currentTarget.style.borderColor = 'rgba(11,31,69,0.08)')}
+                >
+                  <div style={{ fontSize: '20px', marginBottom: '8px' }}>{item.icon}</div>
+                  <div style={{ fontSize: '11px', color: '#8A92A3', marginBottom: '4px' }}>{item.title}</div>
+                  <div style={{ fontFamily: 'Georgia,serif', fontSize: '22px', fontWeight: '800', color: '#0B1F45' }}>{item.value}</div>
+                </div>
+              </a>
+            ))}
+          </div>
+
         </div>
       </div>
     </div>
