@@ -900,7 +900,7 @@ export default function Home() {
             </div>
           </div>
 
-          <div className={`reveal-scale${pricing.visible ? ' visible' : ''} delay-2`} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 40, alignItems: 'start' }} className="pricing-grid">
+          <div className={`reveal-scale${pricing.visible ? ' visible' : ''} delay-2 pricing-grid`} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 40, alignItems: 'start' }}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
               {plans.map(plan => (
                 <button key={plan.id} onClick={() => setActivePlan(plan.id)} style={{
