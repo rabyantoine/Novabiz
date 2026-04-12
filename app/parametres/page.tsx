@@ -19,18 +19,18 @@ const inp: React.CSSProperties = {
 const MODULES = [
   { key: 'dashboard',    label: '📊 Dashboard' },
   { key: 'factures',     label: '🧾 Factures' },
-  { key: 'devis',        label: '📝 Devis' },
+  { key: 'devis',        label: '📋 Devis' },
   { key: 'catalogue',    label: '📦 Catalogue' },
   { key: 'crm',          label: '👥 CRM' },
   { key: 'frais',        label: '💸 Frais' },
   { key: 'relances',     label: '🔔 Relances' },
   { key: 'planning',     label: '📅 Planning' },
   { key: 'rapports',     label: '📈 Rapports' },
-  { key: 'classeur',     label: '🗂 Classeur' },
+  { key: 'classeur',     label: '📁 Classeur' },
   { key: 'fournisseurs', label: '🏭 Fournisseurs' },
   { key: 'achats',       label: '🛒 Achats' },
   { key: 'banque',       label: '🏦 Banque' },
-  { key: 'rh',           label: '👤 RH' },
+  { key: 'rh',           label: '🤝 RH' },
   { key: 'messages',     label: '✉️ Messages' },
   { key: 'parametres',   label: '⚙️ Paramètres' },
 ]
@@ -64,7 +64,7 @@ export default function Parametres() {
   const [loading, setLoading] = useState(true)
   const [toast, setToast]     = useState('')
 
-  // ── Équipe
+  //── Équipe
   const [members, setMembers]           = useState<Member[]>([])
   const [loadingMembers, setLoadingMembers] = useState(false)
   const [inviteEmail, setInviteEmail]   = useState('')
@@ -117,7 +117,7 @@ export default function Parametres() {
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (form.iban && !validateIban(form.iban).valid) { showToast('❌ IBAN invalide'); return }
+    if (form.iban && !validateIban(form.iban).valid) { showToast('✗ IBAN invalide'); return }
     setSaving(true)
     const { error } = await supabase.from('profil').upsert({
       user_id: user.id,
@@ -127,7 +127,7 @@ export default function Parametres() {
       notes: form.notes, updated_at: new Date().toISOString(),
     }, { onConflict: 'user_id' })
     setSaving(false)
-    error ? showToast('❌ Erreur : ' + error.message) : showToast('✓ Profil sauvegardé avec succès')
+    error ? showToast('✗ Erreur : ' + error.message) : showToast('✓ Profil sauvegardé avec succès')
   }
 
   // ─── Équipe ───────────────────────────────────────────────────────────────
@@ -173,7 +173,7 @@ export default function Parametres() {
       .single()
 
     if (existing) {
-      showToast('❌ Ce membre existe déjà')
+      showToast('✗ Ce membre existe déjà')
       setInviting(false)
       return
     }
@@ -187,7 +187,7 @@ export default function Parametres() {
     })
 
     setInviting(false)
-    if (error) { showToast('❌ Erreur : ' + error.message); return }
+    if (error) { showToast('✗ Erreur : ' + error.message); return }
 
     showToast('✓ Invitation créée — partagez le lien à votre collaborateur')
     setInviteEmail('')
@@ -198,7 +198,6 @@ export default function Parametres() {
 
   const openEditPerms = (member: Member) => {
     setEditMember(member)
-    // Clone deep
     const clone: PermMap = {}
     MODULES.forEach(m => {
       clone[m.key] = { ...(member.permissions[m.key] || { can_read: false, can_write: false, can_delete: false }) }
@@ -209,11 +208,9 @@ export default function Parametres() {
   const togglePerm = (module: string, field: 'can_read' | 'can_write' | 'can_delete') => {
     setEditPerms(prev => {
       const updated = { ...prev, [module]: { ...prev[module], [field]: !prev[module][field] } }
-      // can_write ou can_delete implique can_read
       if ((field === 'can_write' || field === 'can_delete') && !prev[module][field]) {
         updated[module].can_read = true
       }
-      // Si on retire can_read, on retire aussi write et delete
       if (field === 'can_read' && prev[module].can_read) {
         updated[module].can_write = false
         updated[module].can_delete = false
@@ -226,7 +223,6 @@ export default function Parametres() {
     if (!editMember) return
     setSavingPerms(true)
 
-    // Upsert toutes les permissions
     const rows = MODULES.map(m => ({
       member_id: editMember.id,
       module: m.key,
@@ -240,7 +236,7 @@ export default function Parametres() {
       .upsert(rows, { onConflict: 'member_id,module' })
 
     setSavingPerms(false)
-    if (error) { showToast('❌ Erreur : ' + error.message); return }
+    if (error) { showToast('✗ Erreur : ' + error.message); return }
 
     showToast('✓ Permissions sauvegardées')
     setEditMember(null)
@@ -252,11 +248,6 @@ export default function Parametres() {
     await supabase.from('team_members').delete().eq('id', memberId)
     await loadMembers(user.id)
     showToast('✓ Membre supprimé')
-  }
-
-  const getInviteLink = (member: Member) => {
-    // Le token est dans la table, on l'affiche via la colonne invite_token
-    return `Lien d'invitation envoyé à ${member.email}`
   }
 
   // ─── Loading ──────────────────────────────────────────────────────────────
@@ -389,7 +380,7 @@ export default function Parametres() {
           ))}
         </div>
 
-        {/* ══════════════════ ONGLET ENTREPRISE ══════════════════ */}
+        {/* ──────────────────── ONGLET ENTREPRISE ──────────────────── */}
         {activeTab === 'entreprise' && (
           <>
             {/* KPI cards */}
@@ -463,7 +454,7 @@ export default function Parametres() {
           </>
         )}
 
-        {/* ══════════════════ ONGLET ÉQUIPE ══════════════════ */}
+        {/* ──────────────────── ONGLET ÉQUIPE ──────────────────── */}
         {activeTab === 'equipe' && (
           <>
             {/* Inviter un membre */}
@@ -534,7 +525,7 @@ export default function Parametres() {
                             {m.statut === 'actif' ? 'Actif' : m.statut === 'invite' ? 'Invité' : 'Suspendu'}
                           </span>
                           <button onClick={() => openEditPerms(m)} style={{ background: '#0B1F45', color: '#C8973A', border: 'none', borderRadius: '8px', padding: '7px 14px', fontSize: '12px', fontWeight: '600', cursor: 'pointer' }}>
-                            ⚙️ Permissions
+                            ✏️ Permissions
                           </button>
                           <button onClick={() => removeMember(m.id)} style={{ background: 'rgba(220,38,38,0.08)', color: '#DC2626', border: 'none', borderRadius: '8px', padding: '7px 12px', fontSize: '12px', fontWeight: '600', cursor: 'pointer' }}>
                             🗑
