@@ -20,6 +20,7 @@ type Achat = {
   notes: string
   statut: 'a_payer' | 'payee' | 'en_retard'
   created_at: string
+  date_paiement_programme: string | null
 }
 
 const CATEGORIES = ['Matières premières', 'Prestataire', 'Abonnement logiciel', 'Équipement', 'Transport', 'Autre']
@@ -42,6 +43,7 @@ const EMPTY_FORM = {
   numero_facture: '',
   date_facture: '',
   date_echeance: '',
+  date_paiement_programme: '',
   montant_ht: '',
   taux_tva: '20',
   categorie: '',
@@ -66,6 +68,12 @@ export default function AchatsPage() {
   const [doublons, setDoublons] = useState<any[]>([])
   const [showDoublonWarning, setShowDoublonWarning] = useState(false)
   const [pendingSave, setPendingSave] = useState<any>(null)
+  const [toast, setToast] = useState<string | null>(null)
+
+  function showToast(msg: string) {
+    setToast(msg)
+    setTimeout(() => setToast(null), 3000)
+  }
 
   useEffect(() => {
     checkAuth()
@@ -114,6 +122,7 @@ export default function AchatsPage() {
       numero_facture: form.numero_facture,
       date_facture: form.date_facture,
       date_echeance: form.date_echeance,
+      date_paiement_programme: form.date_paiement_programme || null,
       montant_ht: ht,
       taux_tva: tva,
       montant_ttc: ttc,
@@ -176,6 +185,16 @@ export default function AchatsPage() {
     fetchAchats()
   }
 
+  async function markPayeProgramme(id: string) {
+    const { error: err } = await supabase
+      .from('achats')
+      .update({ statut: 'payee', date_paiement_programme: null })
+      .eq('id', id)
+    if (err) { setError('Erreur lors de la mise à jour.'); return }
+    showToast('✓ Achat marqué comme payé')
+    fetchAchats()
+  }
+
   async function deleteAchat(id: string) {
     if (!confirm('Supprimer cette facture ?')) return
     const { error: err } = await supabase.from('achats').delete().eq('id', id)
@@ -190,6 +209,7 @@ export default function AchatsPage() {
       numero_facture: a.numero_facture || '',
       date_facture: a.date_facture || '',
       date_echeance: a.date_echeance || '',
+      date_paiement_programme: a.date_paiement_programme || '',
       montant_ht: String(a.montant_ht ?? ''),
       taux_tva: String(a.taux_tva ?? '20'),
       categorie: a.categorie || '',
@@ -229,6 +249,21 @@ export default function AchatsPage() {
     .reduce((sum, a) => sum + (a.montant_ttc || 0), 0)
 
   const countEnRetard = achats.filter(a => a.statut === 'en_retard').length
+
+  const today30 = new Date(); today30.setDate(today30.getDate() + 30)
+  const today30str = today30.toISOString().split('T')[0]
+  const paiementsProgrammes = achats.filter(a =>
+    a.date_paiement_programme &&
+    a.statut !== 'payee' &&
+    a.date_paiement_programme <= today30str
+  )
+
+  function urgenceStyle(date: string): { background: string; border: string } {
+    const in7 = new Date(); in7.setDate(in7.getDate() + 7)
+    if (date < today) return { background: '#FEE2E2', border: '1px solid #EF4444' }
+    if (date <= in7.toISOString().split('T')[0]) return { background: '#FEF3C7', border: '1px solid #F59E0B' }
+    return { background: '#F0FDF4', border: '1px solid #22C55E' }
+  }
 
   const ttcPreview = (() => {
     const ht = parseFloat(form.montant_ht) || 0
@@ -314,6 +349,44 @@ export default function AchatsPage() {
           </div>
         </div>
 
+        {/* Paiements programmés à venir */}
+        {paiementsProgrammes.length > 0 && (
+          <div style={{ marginBottom: 32 }}>
+            <h2 style={{ fontFamily: 'Georgia, serif', fontSize: 18, color: '#0B1F45', margin: '0 0 16px' }}>
+              📅 Paiements programmés à venir
+            </h2>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              {paiementsProgrammes.map(a => {
+                const style = urgenceStyle(a.date_paiement_programme!)
+                const initiale = (a.fournisseur_nom || '?')[0].toUpperCase()
+                return (
+                  <div key={a.id} style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '14px 20px', borderRadius: 12, background: style.background, border: style.border }}>
+                    <div style={{ width: 40, height: 40, borderRadius: '50%', background: '#0B1F45', color: '#C8973A', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 16, flexShrink: 0 }}>
+                      {initiale}
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <span style={{ fontWeight: 700, color: '#0B1F45', fontSize: 14 }}>{a.fournisseur_nom}</span>
+                      {a.numero_facture && <span style={{ color: '#666', fontSize: 13, marginLeft: 10 }}>N°{a.numero_facture}</span>}
+                    </div>
+                    <div style={{ fontWeight: 700, color: '#0B1F45', fontSize: 15, whiteSpace: 'nowrap' }}>
+                      {(a.montant_ttc ?? 0).toLocaleString('fr-FR', { minimumFractionDigits: 2 })} €
+                    </div>
+                    <div style={{ color: '#555', fontSize: 13, whiteSpace: 'nowrap' }}>
+                      {new Date(a.date_paiement_programme!).toLocaleDateString('fr-FR')}
+                    </div>
+                    <button
+                      onClick={() => markPayeProgramme(a.id)}
+                      style={{ background: '#0B1F45', color: '#C8973A', border: 'none', borderRadius: 8, padding: '7px 16px', fontSize: 13, fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap' }}
+                    >
+                      ✓ Marquer payé
+                    </button>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        )}
+
         {/* Filtres */}
         <div style={{ display: 'flex', gap: 12, marginBottom: 24, flexWrap: 'wrap' }}>
           <input
@@ -381,9 +454,16 @@ export default function AchatsPage() {
                       {(a.montant_ttc ?? 0).toLocaleString('fr-FR', { minimumFractionDigits: 2 })} €
                     </td>
                     <td style={{ padding: '14px 16px' }}>
-                      <span style={{ backgroundColor: statut.bg, color: statut.color, borderRadius: 20, padding: '3px 10px', fontSize: 12, fontWeight: 600 }}>
-                        {STATUT_LABELS[a.statut] || a.statut}
-                      </span>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, alignItems: 'center' }}>
+                        <span style={{ backgroundColor: statut.bg, color: statut.color, borderRadius: 20, padding: '3px 10px', fontSize: 12, fontWeight: 600 }}>
+                          {STATUT_LABELS[a.statut] || a.statut}
+                        </span>
+                        {a.date_paiement_programme && (
+                          <span style={{ backgroundColor: '#DBEAFE', color: '#1D4ED8', borderRadius: 20, padding: '3px 10px', fontSize: 11, fontWeight: 600 }}>
+                            📅 Prévu le {new Date(a.date_paiement_programme).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' })}
+                          </span>
+                        )}
+                      </div>
                     </td>
                     <td style={{ padding: '14px 16px' }}>
                       <div style={{ display: 'flex', gap: 6 }}>
@@ -455,6 +535,16 @@ export default function AchatsPage() {
                   type="date"
                   value={form.date_echeance}
                   onChange={e => setForm(f => ({ ...f, date_echeance: e.target.value }))}
+                  style={{ width: '100%', padding: '10px 12px', borderRadius: 8, border: '1px solid #e5e7eb', fontSize: 14, boxSizing: 'border-box' }}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: 12, color: '#666', marginBottom: 4 }}>Date de paiement programmé (optionnel)</label>
+                <input
+                  type="date"
+                  value={form.date_paiement_programme}
+                  onChange={e => setForm(f => ({ ...f, date_paiement_programme: e.target.value }))}
                   style={{ width: '100%', padding: '10px 12px', borderRadius: 8, border: '1px solid #e5e7eb', fontSize: 14, boxSizing: 'border-box' }}
                 />
               </div>
@@ -579,6 +669,12 @@ export default function AchatsPage() {
               </button>
             </div>
           </div>
+        </div>
+      )}
+
+      {toast && (
+        <div style={{ position: 'fixed', bottom: 32, left: '50%', transform: 'translateX(-50%)', background: '#0B1F45', color: '#C8973A', borderRadius: 10, padding: '12px 28px', fontSize: 14, fontWeight: 700, zIndex: 2000, boxShadow: '0 4px 16px rgba(0,0,0,0.18)' }}>
+          {toast}
         </div>
       )}
 
