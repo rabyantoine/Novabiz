@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import { supabase } from '../../lib/supabase'
 import SkeletonLoader from '../components/SkeletonLoader'
 import Nav from '@/components/Nav'
+import { usePermissions } from '../../lib/usePermissions'
 
 type Charge = {
   id: string
@@ -46,6 +47,7 @@ const fmt = (n: number) =>
   new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(n)
 
 export default function Frais() {
+  const { loading: permLoading, isOwner, can } = usePermissions()
   const [user, setUser] = useState<any>(null)
   const [charges, setCharges] = useState<Charge[]>([])
   const [loading, setLoading] = useState(true)
@@ -169,7 +171,30 @@ export default function Frais() {
   }
   const monthLabel = new Date(filterMonth + '-01').toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })
 
-  if (loading) return <SkeletonLoader rows={6} stats={3} cols={[26, 18, 14, 14, 14, 10]} />
+  if (loading || permLoading) return <SkeletonLoader rows={6} stats={3} cols={[26, 18, 14, 14, 14, 10]} />
+
+  if (!permLoading && !isOwner && !can('frais')) {
+    return (
+      <div style={{ minHeight: '100vh', background: '#FAF8F4', fontFamily: 'sans-serif' }}>
+        <Nav />
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '70vh', gap: '16px' }}>
+          <div style={{ fontSize: '48px' }}>🔒</div>
+          <h2 style={{ fontFamily: 'Georgia,serif', fontSize: '22px', fontWeight: '800', color: '#0B1F45', margin: 0 }}>
+            Accès non autorisé
+          </h2>
+          <p style={{ fontSize: '14px', color: '#8A92A3', margin: 0, textAlign: 'center', maxWidth: '340px' }}>
+            Vous n'avez pas accès à ce module. Contactez l'administrateur de votre espace NovaBiz.
+          </p>
+          <button
+            onClick={() => window.location.href = '/dashboard'}
+            style={{ marginTop: '8px', background: '#0B1F45', color: '#C8973A', border: 'none', borderRadius: '10px', padding: '12px 28px', fontSize: '14px', fontWeight: '700', cursor: 'pointer' }}
+          >
+            Retour au dashboard
+          </button>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div style={{ minHeight: '100vh', background: '#FAF8F4', fontFamily: 'sans-serif' }}>

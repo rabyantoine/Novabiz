@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import { supabase } from '../../lib/supabase'
 import SkeletonLoader from '../components/SkeletonLoader'
 import Nav from '@/components/Nav'
+import { usePermissions } from '../../lib/usePermissions'
 
 type Facture = {
   id: string
@@ -40,6 +41,7 @@ function retardLabel(jours: number): { label: string; bg: string; color: string 
 }
 
 export default function Relances() {
+  const { loading: permLoading, isOwner, can } = usePermissions()
   const [user, setUser] = useState<any>(null)
   const [factures, setFactures] = useState<Facture[]>([])
   const [loading, setLoading] = useState(true)
@@ -118,12 +120,35 @@ export default function Relances() {
   const nbRetard = factures.filter(f => !paid.has(f.id) && joursRetard(f.date_echeance) > 0).length
   const nbCritique = factures.filter(f => !paid.has(f.id) && joursRetard(f.date_echeance) > 30).length
 
-  if (loading) return (
+  if (loading || permLoading) return (
     <div style={{ background: '#0B1F45', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
       <div style={{ width: '32px', height: '32px', border: '3px solid rgba(200,151,58,0.3)', borderTopColor: '#C8973A', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
   )
+
+  if (!permLoading && !isOwner && !can('relances')) {
+    return (
+      <div style={{ minHeight: '100vh', background: '#FAF8F4', fontFamily: 'sans-serif' }}>
+        <Nav />
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '70vh', gap: '16px' }}>
+          <div style={{ fontSize: '48px' }}>🔒</div>
+          <h2 style={{ fontFamily: 'Georgia,serif', fontSize: '22px', fontWeight: '800', color: '#0B1F45', margin: 0 }}>
+            Accès non autorisé
+          </h2>
+          <p style={{ fontSize: '14px', color: '#8A92A3', margin: 0, textAlign: 'center', maxWidth: '340px' }}>
+            Vous n'avez pas accès à ce module. Contactez l'administrateur de votre espace NovaBiz.
+          </p>
+          <button
+            onClick={() => window.location.href = '/dashboard'}
+            style={{ marginTop: '8px', background: '#0B1F45', color: '#C8973A', border: 'none', borderRadius: '10px', padding: '12px 28px', fontSize: '14px', fontWeight: '700', cursor: 'pointer' }}
+          >
+            Retour au dashboard
+          </button>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div style={{ minHeight: '100vh', background: '#FAF8F4', fontFamily: 'sans-serif' }}>

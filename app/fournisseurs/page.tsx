@@ -6,6 +6,7 @@ import { supabase } from '../../lib/supabase'
 import Nav from '../../components/Nav'
 import IbanInput from '../../components/IbanInput'
 import { validateIban } from '../../lib/validateIban'
+import { usePermissions } from '../../lib/usePermissions'
 
 type Fournisseur = {
   id: string
@@ -30,6 +31,7 @@ const CATEGORIES = ['Informatique', 'Fournitures', 'Services', 'Logistique', 'Ma
 
 export default function FournisseursPage() {
   const router = useRouter()
+  const { loading: permLoading, isOwner, can } = usePermissions()
 
   const [fournisseurs, setFournisseurs] = useState<Fournisseur[]>([])
   const [loading, setLoading] = useState(true)
@@ -123,6 +125,29 @@ export default function FournisseursPage() {
 
   const actifs = fournisseurs.filter(f => f.statut === 'actif').length
   const inactifs = fournisseurs.filter(f => f.statut === 'inactif').length
+
+  if (!permLoading && !isOwner && !can('fournisseurs')) {
+    return (
+      <div style={{ minHeight: '100vh', background: '#FAF8F4', fontFamily: 'sans-serif' }}>
+        <Nav />
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '70vh', gap: '16px' }}>
+          <div style={{ fontSize: '48px' }}>🔒</div>
+          <h2 style={{ fontFamily: 'Georgia,serif', fontSize: '22px', fontWeight: '800', color: '#0B1F45', margin: 0 }}>
+            Accès non autorisé
+          </h2>
+          <p style={{ fontSize: '14px', color: '#8A92A3', margin: 0, textAlign: 'center', maxWidth: '340px' }}>
+            Vous n'avez pas accès à ce module. Contactez l'administrateur de votre espace NovaBiz.
+          </p>
+          <button
+            onClick={() => window.location.href = '/dashboard'}
+            style={{ marginTop: '8px', background: '#0B1F45', color: '#C8973A', border: 'none', borderRadius: '10px', padding: '12px 28px', fontSize: '14px', fontWeight: '700', cursor: 'pointer' }}
+          >
+            Retour au dashboard
+          </button>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div style={{ minHeight: '100vh', backgroundColor: '#FAF8F4' }}>
