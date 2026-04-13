@@ -63,6 +63,9 @@ export default function AchatsPage() {
   const [editingId, setEditingId] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
   const [form, setForm] = useState(EMPTY_FORM)
+  const [doublons, setDoublons] = useState<any[]>([])
+  const [showDoublonWarning, setShowDoublonWarning] = useState(false)
+  const [pendingSave, setPendingSave] = useState<any>(null)
 
   useEffect(() => {
     checkAuth()
@@ -119,19 +122,52 @@ export default function AchatsPage() {
       statut: form.statut,
     }
 
-    let err
     if (editingId) {
       const { error } = await supabase.from('achats').update(payload).eq('id', editingId)
-      err = error
-    } else {
-      const { error } = await supabase.from('achats').insert({ ...payload, user_id: session.user.id })
-      err = error
+      setSaving(false)
+      if (error) { setError("Erreur lors de l'enregistrement."); return }
+      closeModal(); fetchAchats()
+      return
     }
 
+    // Détection doublons uniquement pour un nouvel achat
+    if (form.date_facture && form.fournisseur_nom) {
+      const dateRef = new Date(form.date_facture)
+      const dateMinus30 = new Date(dateRef); dateMinus30.setDate(dateMinus30.getDate() - 30)
+      const datePlus30  = new Date(dateRef); datePlus30.setDate(datePlus30.getDate() + 30)
+
+      const { data: found } = await supabase
+        .from('achats')
+        .select('id, numero_facture, date_facture, montant_ttc')
+        .eq('user_id', session.user.id)
+        .eq('fournisseur_nom', form.fournisseur_nom)
+        .eq('montant_ttc', ttc)
+        .gte('date_facture', dateMinus30.toISOString().split('T')[0])
+        .lte('date_facture', datePlus30.toISOString().split('T')[0])
+        .limit(3)
+
+      if (found && found.length > 0) {
+        setSaving(false)
+        setDoublons(found)
+        setPendingSave({ ...payload, user_id: session.user.id })
+        setShowDoublonWarning(true)
+        return
+      }
+    }
+
+    const { error } = await supabase.from('achats').insert({ ...payload, user_id: session.user.id })
     setSaving(false)
-    if (err) { setError("Erreur lors de l'enregistrement."); return }
-    closeModal()
-    fetchAchats()
+    if (error) { setError("Erreur lors de l'enregistrement."); return }
+    closeModal(); fetchAchats()
+  }
+
+  async function confirmSave() {
+    if (!pendingSave) return
+    setSaving(true)
+    const { error } = await supabase.from('achats').insert(pendingSave)
+    setSaving(false)
+    if (error) { setError("Erreur lors de l'enregistrement."); return }
+    closeModal(); fetchAchats()
   }
 
   async function markPayee(id: string) {
@@ -167,6 +203,9 @@ export default function AchatsPage() {
     setShowModal(false)
     setEditingId(null)
     setForm(EMPTY_FORM)
+    setDoublons([])
+    setShowDoublonWarning(false)
+    setPendingSave(null)
   }
 
   const today = new Date().toISOString().split('T')[0]
@@ -488,6 +527,37 @@ export default function AchatsPage() {
               </div>
             </div>
 
+            {showDoublonWarning && (
+              <div style={{ background: '#FEF3C7', border: '1px solid #F59E0B', borderRadius: 12, padding: '16px 20px', marginTop: 20 }}>
+                <p style={{ margin: '0 0 8px', fontWeight: 700, color: '#0B1F45', fontSize: 14 }}>
+                  ⚠️ Doublon potentiel détecté
+                </p>
+                <p style={{ margin: '0 0 8px', fontSize: 13, color: '#555' }}>Un achat similaire existe déjà :</p>
+                <ul style={{ margin: '0 0 16px', paddingLeft: 18 }}>
+                  {doublons.map(d => (
+                    <li key={d.id} style={{ fontSize: 13, color: '#666', marginBottom: 4 }}>
+                      Facture N°{d.numero_facture || '—'} — {(d.montant_ttc ?? 0).toLocaleString('fr-FR', { minimumFractionDigits: 2 })} € — {d.date_facture ? new Date(d.date_facture).toLocaleDateString('fr-FR') : '—'}
+                    </li>
+                  ))}
+                </ul>
+                <div style={{ display: 'flex', gap: 10 }}>
+                  <button
+                    onClick={() => { setShowDoublonWarning(false); setPendingSave(null) }}
+                    style={{ padding: '8px 20px', borderRadius: 8, border: '1px solid #0B1F45', background: 'transparent', color: '#0B1F45', cursor: 'pointer', fontSize: 13, fontWeight: 600 }}
+                  >
+                    Annuler
+                  </button>
+                  <button
+                    onClick={confirmSave}
+                    disabled={saving}
+                    style={{ padding: '8px 20px', borderRadius: 8, border: 'none', background: '#C8973A', color: 'white', cursor: 'pointer', fontSize: 13, fontWeight: 600 }}
+                  >
+                    {saving ? 'Enregistrement...' : 'Sauvegarder quand même'}
+                  </button>
+                </div>
+              </div>
+            )}
+
             <div style={{ display: 'flex', gap: 12, marginTop: 24, justifyContent: 'flex-end' }}>
               <button
                 onClick={closeModal}
@@ -497,11 +567,11 @@ export default function AchatsPage() {
               </button>
               <button
                 onClick={saveAchat}
-                disabled={saving || !form.fournisseur_nom}
+                disabled={saving || !form.fournisseur_nom || showDoublonWarning}
                 style={{
                   padding: '10px 24px', borderRadius: 8, border: 'none',
-                  backgroundColor: form.fournisseur_nom ? '#C8973A' : '#ccc',
-                  color: 'white', cursor: form.fournisseur_nom ? 'pointer' : 'not-allowed',
+                  backgroundColor: form.fournisseur_nom && !showDoublonWarning ? '#C8973A' : '#ccc',
+                  color: 'white', cursor: form.fournisseur_nom && !showDoublonWarning ? 'pointer' : 'not-allowed',
                   fontSize: 14, fontWeight: 600,
                 }}
               >
